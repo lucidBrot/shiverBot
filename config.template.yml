@@ -1,0 +1,3 @@
+# This file is supposed to be only a template. There is a secret version stored locally
+mainconfig:
+  token: 'mytokenasdfghjklö'
