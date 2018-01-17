@@ -15,13 +15,12 @@ import logging
 
 BOT = None
 
-# setup logger
+# setup logger - outside of main() because it should also log when this file was loaded in an other way
 LOGFILE = './log.shiver'
 FORMATTER = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-HANDLER = logging.FileHandler(LOGFILE)
-LOGGER = logging.getLogger(__name__) # get a logger that has a unique name for the module
-LOGGER.setLevel(logging.DEBUG)
-LOGGER.addHandler(HANDLER)
+# get a logger that has a unique name for the module
+# The following line is called further down this file after all the definitions
+''' LOGGER = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=FORMATTER) '''
 
 def handle(msg): # msg is an array that could be used e.g as msg['chat']['id']  to get the chat id
 	global helpMessage, startMessage, BOT
@@ -75,6 +74,17 @@ def txtMsgSwitch(msgtext, chat_id):
 
 	return result
 
+# setup a new logger
+def setup_logger(name, log_file, formatter, level=logging.INFO):
+	handler = logging.FileHandler(log_file)        
+	handler.setFormatter(formatter)
+
+	logger = logging.getLogger(name)
+	logger.setLevel(level)
+	logger.addHandler(handler)
+
+	return logger
+
 def main(): # starts everything
 	global BOT
 	# load token from config file and set global BOT variable
@@ -88,6 +98,10 @@ def main(): # starts everything
 	while 1:
 		time.sleep(10)
 
+# outside of main because it must be ALWAYS done, even if the file is loaded from elsewhere
+
+# initialize logger
+LOGGER = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=FORMATTER)
 
 # used to ignore "forward declaration" needs
 if __name__=="__main__":
