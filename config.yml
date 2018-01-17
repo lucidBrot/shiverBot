@@ -1,0 +1,4 @@
+# This file is supposed to only contain public information
+logger:
+  format: '%(asctime)s %(levelname)s %(message)s'
+  log_file: './shiver.log'

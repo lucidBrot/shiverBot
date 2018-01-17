@@ -10,17 +10,19 @@ import logging
 
 # global variable for the BOT. Using secret token from config file. That is loaded in main.
 # IF YOU'RE IMPORTING THIS FILE, MAKE SURE TO SET BOT
-
-#TODO: find out how to set which logs should appear from imported packages
-
 BOT = None
 
+# config files
+SECRET_CONFIG_FILE = './secret_config.yml'
+GENERAL_CONFIG_FILE = './config.yml'
+
+# -------------------------------------------------------
+# These settings are ignored unless main() is not called
 # setup logger - outside of main() because it should also log when this file was loaded in an other way
 LOGFILE = './log.shiver'
-FORMATTER = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-# get a logger that has a unique name for the module
-# The following line is called further down this file after all the definitions
-''' LOGGER = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=FORMATTER) '''
+FORMATTER = logging.Formatter('%(asctime)s %(levelname)s %(message)s') # Formatter for the logger
+LOGGER = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=FORMATTER)
+# -------------------------------------------------------
 
 def handle(msg): # msg is an array that could be used e.g as msg['chat']['id']  to get the chat id
 	global helpMessage, startMessage, BOT
@@ -86,10 +88,21 @@ def setup_logger(name, log_file, formatter, level=logging.INFO):
 	return logger
 
 def main(): # starts everything
-	global BOT
+	global BOT, FORMATTER
+	# prepare log formatter
+	f = open(GENERAL_CONFIG_FILE)
+	config = yaml.safe_load(f)
+	close(f)
+	log_format = config['logger']['format']
+	FORMATTER = logging.Formatter(log_format) # '%(asctime)s %(levelname)s %(message)s' or similar
+	# set logger to file from config
+	LOGFILE = config['logger']['log_file']
+
 	# load token from config file and set global BOT variable
-	config = yaml.safe_load(open('./config.yml'))
-	token = config['mainconfig']['token']
+	f = open(SECRET_CONFIG_FILE)
+	secret_config = yaml.safe_load(f)
+	close(f)
+	token = secret_config['mainconfig']['token']
 	BOT = telepot.Bot(token)
 	# run listener
 	telepot.loop.MessageLoop(BOT, handle).run_as_thread()
@@ -98,15 +111,7 @@ def main(): # starts everything
 	while 1:
 		time.sleep(10)
 
-# outside of main because it must be ALWAYS done, even if the file is loaded from elsewhere
-
-# initialize logger
-LOGGER = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=FORMATTER)
-
+# ----------------------------------------------
 # used to ignore "forward declaration" needs
 if __name__=="__main__":
-	logging.basicConfig(level=logging.DEBUG, filename="logfile.txt", filemode="a+",
-						format="%(asctime)-15s %(levelname)-8s %(message)s")
-						#TODO: find out how this works
-	logging.info("Starting logging...")
 	main()
