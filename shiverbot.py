@@ -15,12 +15,22 @@ import logging
 
 BOT = None
 
+# setup logger
+LOGFILE = './log.shiver'
+FORMATTER = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+HANDLER = logging.FileHandler(LOGFILE)
+LOGGER = logging.getLogger(__name__) # get a logger that has a unique name for the module
+LOGGER.setLevel(logging.DEBUG)
+LOGGER.addHandler(HANDLER)
+
 def handle(msg): # msg is an array that could be used e.g as msg['chat']['id']  to get the chat id
 	global helpMessage, startMessage, BOT
 
 	content_type, chat_type, chat_id = telepot.glance(msg)
 	print 'Received ({}, {}, {})'.format(content_type, chat_type, chat_id)
 	logging.info('Received ({}, {}, {})'.format(content_type, chat_type, chat_id))
+	# testing the other logger
+	LOGGER.info('Received ({}, {}, {})'.format(content_type, chat_type, chat_id))
 
 	if content_type == 'text':
 		handleText(msg)	
