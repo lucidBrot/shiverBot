@@ -21,7 +21,7 @@ GENERAL_CONFIG_FILE = './config.yml'
 # setup logger - outside of main() because it should also log when this file was loaded in an other way
 LOGFILE = './log.shiver'
 FORMATTER = logging.Formatter('%(asctime)s %(levelname)s %(message)s') # Formatter for the logger
-LOGGER = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=FORMATTER)
+'''LOGGER = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=FORMATTER)''' # This is done further down where setup_logger is defined
 # -------------------------------------------------------
 
 def handle(msg): # msg is an array that could be used e.g as msg['chat']['id']  to get the chat id
@@ -91,17 +91,21 @@ def main(): # starts everything
 	global BOT, FORMATTER
 	# prepare log formatter
 	f = open(GENERAL_CONFIG_FILE)
-	config = yaml.safe_load(f)
-	close(f)
+	try:
+		config = yaml.safe_load(f)
+	finally:
+		f.close()
 	log_format = config['logger']['format']
 	FORMATTER = logging.Formatter(log_format) # '%(asctime)s %(levelname)s %(message)s' or similar
 	# set logger to file from config
 	LOGFILE = config['logger']['log_file']
 
 	# load token from config file and set global BOT variable
-	f = open(SECRET_CONFIG_FILE)
-	secret_config = yaml.safe_load(f)
-	close(f)
+	f = open(SECRET_CONFIG_FILE) # close file in case of crash
+	try:
+		secret_config = yaml.safe_load(f)
+	finally:
+		f.close()
 	token = secret_config['mainconfig']['token']
 	BOT = telepot.Bot(token)
 	# run listener
@@ -112,6 +116,8 @@ def main(): # starts everything
 		time.sleep(10)
 
 # ----------------------------------------------
+# Here is where things are done that were not possible at the top
+LOGGER = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=FORMATTER)
 # used to ignore "forward declaration" needs
 if __name__=="__main__":
 	main()
