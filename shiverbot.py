@@ -1,4 +1,4 @@
-# shi_ver_BOT BOT
+# shi_ver_bot_g bot_g
 import sys
 import time
 import random
@@ -8,9 +8,9 @@ import telepot.loop
 import yaml
 import logging
 
-# global variable for the BOT. Using secret token from config file. That is loaded in main.
-# IF YOU'RE IMPORTING THIS FILE, MAKE SURE TO SET BOT
-BOT = None
+# global variable for the bot_g. Using secret token from config file. That is loaded in main.
+# IF YOU'RE IMPORTING THIS FILE, MAKE SURE TO SET bot_g
+bot_g = None
 
 # config files
 SECRET_CONFIG_FILE = './secret_config.yml'
@@ -20,18 +20,18 @@ GENERAL_CONFIG_FILE = './config.yml'
 # These settings are ignored unless main() is not called
 # setup logger - outside of main() because it should also log when this file was loaded in an other way
 LOGFILE = './log.shiver'
-FORMATTER = logging.Formatter('%(asctime)s %(levelname)s %(message)s') # Formatter for the logger
-'''LOGGER = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=FORMATTER)''' # This is done further down where setup_logger is defined
+formatter_g = logging.Formatter('%(asctime)s %(levelname)s %(message)s') # Formatter for the logger
+'''logger_g = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=formatter_g)''' # This is done further down where setup_logger is defined
 # -------------------------------------------------------
 
 def handle(msg): # msg is an array that could be used e.g as msg['chat']['id']  to get the chat id
-	global helpMessage, startMessage, BOT
+	global bot_g
 
 	content_type, chat_type, chat_id = telepot.glance(msg)
 	print 'Received ({}, {}, {})'.format(content_type, chat_type, chat_id)
 	logging.info('Received ({}, {}, {})'.format(content_type, chat_type, chat_id))
 	# testing the other logger
-	LOGGER.info('Received ({}, {}, {})'.format(content_type, chat_type, chat_id))
+	logger_g.info('Received ({}, {}, {})'.format(content_type, chat_type, chat_id))
 
 	if content_type == 'text':
 		handleText(msg)	
@@ -44,7 +44,7 @@ def handle(msg): # msg is an array that could be used e.g as msg['chat']['id']  
 # what should be done if a text message is received
 # msg is the whole message object, but assumed to be of content type text
 def handleText(msg):
-	global BOT, helpMessage, startMessage
+	global bot_g 
 	msgtext = msg['text']
 	content_type, chat_type, chat_id = telepot.glance(msg)
 	print 'Got message <{}> from chat_id {}'.format(msgtext, chat_id)
@@ -57,10 +57,10 @@ def handlePhoto(msg):# TODO
 def handleDocument(msg):# TODO
 	print 'Received a Document. TODO: doc handling'
 
-# TODO: support message@BOTname
+# TODO: support message@bot_gname
 # to be used to map messages to actions
 def txtMsgSwitch(msgtext, chat_id):
-	global BOT
+	global bot_g
 	messageChoices = {
 		'/test':'test',
 		'/help':'This is a very helpful message indeed.',
@@ -69,10 +69,10 @@ def txtMsgSwitch(msgtext, chat_id):
 	result = messageChoices.get(msgtext, 'default')
 
 	if result == 'default':
-		BOT.sendMessage(chat_id, 'defaulting to default message')
+		bot_g.sendMessage(chat_id, 'defaulting to default message')
 	# elif any cases that should be handled elsewhere
 	else: # send message as specified in dictionary
-		BOT.sendMessage(chat_id, result)
+		bot_g.sendMessage(chat_id, result)
 
 	return result
 
@@ -88,7 +88,7 @@ def setup_logger(name, log_file, formatter, level=logging.INFO):
 	return logger
 
 def main(): # starts everything
-	global BOT, FORMATTER
+	global bot_g, formatter_g
 	# prepare log formatter
 	f = open(GENERAL_CONFIG_FILE)
 	try:
@@ -96,20 +96,21 @@ def main(): # starts everything
 	finally:
 		f.close()
 	log_format = config['logger']['format']
-	FORMATTER = logging.Formatter(log_format) # '%(asctime)s %(levelname)s %(message)s' or similar
+	formatter_g = logging.Formatter(log_format) # '%(asctime)s %(levelname)s %(message)s' or similar
 	# set logger to file from config
 	LOGFILE = config['logger']['log_file']
+	print 'set logfile to {}'.format(LOGFILE)
 
-	# load token from config file and set global BOT variable
+	# load token from config file and set global bot_g variable
 	f = open(SECRET_CONFIG_FILE) # close file in case of crash
 	try:
 		secret_config = yaml.safe_load(f)
 	finally:
 		f.close()
 	token = secret_config['mainconfig']['token']
-	BOT = telepot.Bot(token)
+	bot_g = telepot.Bot(token)
 	# run listener
-	telepot.loop.MessageLoop(BOT, handle).run_as_thread()
+	telepot.loop.MessageLoop(bot_g, handle).run_as_thread()
 	print 'I am listening...'
 
 	while 1:
@@ -117,7 +118,7 @@ def main(): # starts everything
 
 # ----------------------------------------------
 # Here is where things are done that were not possible at the top
-LOGGER = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=FORMATTER)
+logger_g = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=formatter_g)
 # used to ignore "forward declaration" needs
 if __name__=="__main__":
 	main()
