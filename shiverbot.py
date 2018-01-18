@@ -8,7 +8,6 @@ import telepot.loop
 import yaml
 import logging
 import re # regex
-import pdb # debugging
 
 # global variable for the bot_g. Using secret token from config file. That is loaded in main.
 # IF YOU'RE IMPORTING THIS FILE, MAKE SURE TO SET bot_g
@@ -23,7 +22,7 @@ GENERAL_CONFIG_FILE = './config.yml'
 # setup logger - outside of main() because it should also log when this file was loaded in an other way
 LOGFILE = './log.shiver'
 formatter_g = logging.Formatter('%(asctime)s %(levelname)s %(message)s') # Formatter for the logger
-logger_g =  # defined in main / on module import
+logger_g = None # defined in main / on module import
 # -------------------------------------------------------
 
 def handle(msg): # msg is an array that could be used e.g as msg['chat']['id']  to get the chat id
@@ -43,7 +42,6 @@ def handle(msg): # msg is an array that could be used e.g as msg['chat']['id']  
 # what should be done if a text message is received
 # msg is the whole message object, but assumed to be of content type text
 def handleText(msg):
-	pdb.set_trace() # debug TODO: remove this line
 	global bot_g, logger_g
 	msgtext = msg['text']
 	content_type, chat_type, chat_id = telepot.glance(msg)
@@ -52,9 +50,11 @@ def handleText(msg):
 	# TODO: call txtMsgSwitch with only the command if the bot name was appended
 
 def handlePhoto(msg):# TODO
+	global logger_g
 	logger_g.info('Received a Photo. TODO: image handling')
 
 def handleDocument(msg):# TODO
+	global logger_g
 	logger_g.info('Received a Document. TODO: doc handling')
 
 # TODO: support message@bot_gname
@@ -91,11 +91,11 @@ def setup_logger(name, log_file, formatter, level=logging.INFO, printout=True):
 		out.setLevel(level)
 		out.setFormatter(formatter)
 		logger.addHandler(out)
-	
+
 	return logger
 
 def main(): # starts everything
-	global bot_g, formatter_g
+	global bot_g, formatter_g, logger_g
 	# prepare log formatter
 	f = open(GENERAL_CONFIG_FILE)
 	try:
@@ -106,7 +106,7 @@ def main(): # starts everything
 	formatter_g = logging.Formatter(log_format) # '%(asctime)s %(levelname)s %(message)s' or similar
 	# set logger to file from config
 	LOGFILE = config['logger']['log_file']
-	logger_g = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=formatter_g)
+	logger_g = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=formatter_g, printout=True)
 	print 'set logfile to {}'.format(LOGFILE)
 
 	# load token from config file and set global bot_g variable
