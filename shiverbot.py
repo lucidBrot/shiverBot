@@ -8,14 +8,16 @@ import telepot.loop
 import yaml
 import logging
 import re # regex
+import os # current directory
 
 # global variable for the bot_g. Using secret token from config file. That is loaded in main.
 # IF YOU'RE IMPORTING THIS FILE, MAKE SURE TO SET bot_g
 bot_g = None
 
 # config files
-SECRET_CONFIG_FILE = './secret_config.yml'
-GENERAL_CONFIG_FILE = './config.yml'
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SECRET_CONFIG_FILE = os.path.join(SCRIPT_DIR, './secret_config.yml')
+GENERAL_CONFIG_FILE = os.path.join(SCRIPT_DIR, './config.yml')
 
 # -------------------------------------------------------
 # These settings are ignored unless main() is not called
