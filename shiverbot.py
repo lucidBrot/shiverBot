@@ -7,6 +7,8 @@ import telepot
 import telepot.loop
 import yaml
 import logging
+import re # regex
+import pdb # debugging
 
 # global variable for the bot_g. Using secret token from config file. That is loaded in main.
 # IF YOU'RE IMPORTING THIS FILE, MAKE SURE TO SET bot_g
@@ -21,15 +23,13 @@ GENERAL_CONFIG_FILE = './config.yml'
 # setup logger - outside of main() because it should also log when this file was loaded in an other way
 LOGFILE = './log.shiver'
 formatter_g = logging.Formatter('%(asctime)s %(levelname)s %(message)s') # Formatter for the logger
-'''logger_g = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=formatter_g)''' # This is done further down where setup_logger is defined
+logger_g =  # defined in main / on module import
 # -------------------------------------------------------
 
 def handle(msg): # msg is an array that could be used e.g as msg['chat']['id']  to get the chat id
 	global bot_g, logger_g
 
 	content_type, chat_type, chat_id = telepot.glance(msg)
-	print 'Received ({}, {}, {})'.format(content_type, chat_type, chat_id) # TODO: get rid of print in favour of the loggers additional handler
-	# testing the other logger
 	logger_g.info('Received ({}, {}, {})'.format(content_type, chat_type, chat_id))
 
 	if content_type == 'text':
@@ -43,18 +43,19 @@ def handle(msg): # msg is an array that could be used e.g as msg['chat']['id']  
 # what should be done if a text message is received
 # msg is the whole message object, but assumed to be of content type text
 def handleText(msg):
+	pdb.set_trace() # debug TODO: remove this line
 	global bot_g, logger_g
 	msgtext = msg['text']
 	content_type, chat_type, chat_id = telepot.glance(msg)
-	print 'Got message <{}> from chat_id {}'.format(msgtext, chat_id)
 	logger_g.info('Got message <{}> from chat_id {}'.format(msgtext, chat_id))
 	txtMsgSwitch(msgtext, chat_id) # find out what to do with the text message
+	# TODO: call txtMsgSwitch with only the command if the bot name was appended
 
 def handlePhoto(msg):# TODO
-	print 'Received a Photo. TODO: image handling'
+	logger_g.info('Received a Photo. TODO: image handling')
 
 def handleDocument(msg):# TODO
-	print 'Received a Document. TODO: doc handling'
+	logger_g.info('Received a Document. TODO: doc handling')
 
 # TODO: support message@bot_gname
 # to be used to map messages to actions
@@ -125,7 +126,8 @@ def main(): # starts everything
 
 # ----------------------------------------------
 # Here is where things are done that were not possible at the top
-logger_g = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=formatter_g)
 # used to ignore "forward declaration" needs
 if __name__=="__main__":
 	main()
+else:
+	logger_g = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=formatter_g)
