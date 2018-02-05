@@ -49,7 +49,6 @@ def handleText(msg):
 	content_type, chat_type, chat_id = telepot.glance(msg)
 	logger_g.info('Got message <{}> from chat_id {}'.format(msgtext, chat_id))
 	txtMsgSwitch(msgtext, chat_id) # find out what to do with the text message
-	# TODO: call txtMsgSwitch with only the command if the bot name was appended
 
 def handlePhoto(msg):# TODO
 	global logger_g
@@ -59,7 +58,6 @@ def handleDocument(msg):# TODO
 	global logger_g
 	logger_g.info('Received a Document. TODO: doc handling')
 
-# TODO: support message@bot_gname
 # to be used to map messages to actions
 def txtMsgSwitch(msgtext, chat_id):
 	global bot_g, botname_g
@@ -67,16 +65,17 @@ def txtMsgSwitch(msgtext, chat_id):
         # support message@botname
         if msgtext.endswith("@{}".format(botname_g)):
             msgtext = msgtext[:-len("@{}".format(botname_g))]
-            print('got rid of ending. now it\'s only {}'.format(msgtext))
+            #print('got rid of ending. now it\'s only {}'.format(msgtext))
 
 	messageChoices = {
-		'/test':'test',
-		'/help':'This is a very helpful message indeed.',
-		'/start':'Hey. I don\'t do stuff yet.'
+                '/test': lambda: 'test',
+                '/help': lambda: 'This is a very helpful message indeed.',
+                '/start':lambda: 'Hey. I don\'t do stuff yet.',
+                '/func':testfunction
 	}
-	result = messageChoices.get(msgtext, 'default')
+	result = messageChoices.get(msgtext, None)()
 
-	if result == 'default':
+	if result == None:
 		bot_g.sendMessage(chat_id, 'defaulting to default message')
 	# elif any cases that should be handled elsewhere
 	else: # send message as specified in dictionary
@@ -101,6 +100,10 @@ def setup_logger(name, log_file, formatter, level=logging.INFO, printout=True):
 		logger.addHandler(out)
 
 	return logger
+
+def testfunction():
+    return "testfunction works!"
+
 
 def main(): # starts everything
 	global bot_g, formatter_g, logger_g, botname_g
