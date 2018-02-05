@@ -62,7 +62,13 @@ def handleDocument(msg):# TODO
 # TODO: support message@bot_gname
 # to be used to map messages to actions
 def txtMsgSwitch(msgtext, chat_id):
-	global bot_g
+	global bot_g, botname_g
+
+        # support message@botname
+        if msgtext.endswith("@{}".format(botname_g)):
+            msgtext = msgtext[:-len("@{}".format(botname_g))]
+            print('got rid of ending. now it\'s only {}'.format(msgtext))
+
 	messageChoices = {
 		'/test':'test',
 		'/help':'This is a very helpful message indeed.',
