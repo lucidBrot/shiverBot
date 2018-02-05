@@ -5,6 +5,7 @@ import random
 import datetime
 import telepot
 import telepot.loop
+import telepot.delegate # delegate bot spawning for consistent threads of conversation
 import yaml
 import logging
 import re # regex
@@ -27,63 +28,79 @@ formatter_g = logging.Formatter('%(asctime)s %(levelname)s %(message)s') # Forma
 logger_g = None # defined in main / on module import
 # -------------------------------------------------------
 
-def handle(msg): # msg is an array that could be used e.g as msg['chat']['id']  to get the chat id
-	global bot_g, logger_g
+class ShiverBot(telepot.helper.ChatHandler):
+    def __init__(self, *args, **kwargs):
+        super(ShiverBot, self).__init__(*args, **kwargs)
 
-	content_type, chat_type, chat_id = telepot.glance(msg)
-	logger_g.info('Received ({}, {}, {})'.format(content_type, chat_type, chat_id))
+    def on_chat_message(self, msg):
+        self.handle(msg)
 
-	if content_type == 'text':
-		handleText(msg)	
-	elif content_type == 'document':
-		handleDocument(msg)
-	elif content_type == 'photo':
-		handlePhoto
+    def handle(self, msg): # msg is an array that could be used e.g as msg['chat']['id']  to get the chat id
+            global bot_g, logger_g
+
+            content_type, chat_type, chat_id = telepot.glance(msg)
+            logger_g.info('Received ({}, {}, {})'.format(content_type, chat_type, chat_id))
+
+            if content_type == 'text':
+                    self.handleText(msg)	
+            elif content_type == 'document':
+                    self.handleDocument(msg)
+            elif content_type == 'photo':
+                    self.handlePhoto
 
 
-# what should be done if a text message is received
-# msg is the whole message object, but assumed to be of content type text
-def handleText(msg):
-	global bot_g, logger_g
-	msgtext = msg['text']
-	content_type, chat_type, chat_id = telepot.glance(msg)
-	logger_g.info('Got message <{}> from chat_id {}'.format(msgtext, chat_id))
-	txtMsgSwitch(msgtext, chat_id) # find out what to do with the text message
+    # what should be done if a text message is received
+    # msg is the whole message object, but assumed to be of content type text
+    def handleText(self, msg):
+            global logger_g
+            msgtext = msg['text']
+            content_type, chat_type, chat_id = telepot.glance(msg)
+            logger_g.info('Got message <{}> from chat_id {}'.format(msgtext, chat_id))
+            self.txtMsgSwitch(msgtext, chat_id) # find out what to do with the text message
 
-def handlePhoto(msg):# TODO
-	global logger_g
-	logger_g.info('Received a Photo. TODO: image handling')
+    def handlePhoto(self, msg):# TODO
+            global logger_g
+            logger_g.info('Received a Photo. TODO: image handling')
 
-def handleDocument(msg):# TODO
-	global logger_g
-	logger_g.info('Received a Document. TODO: doc handling')
+    def handleDocument(self, msg):# TODO
+            global logger_g
+            logger_g.info('Received a Document. TODO: doc handling')
 
-# to be used to map messages to actions
-def txtMsgSwitch(msgtext, chat_id):
-	global bot_g, botname_g
+    # to be used to map messages to actions
+    def txtMsgSwitch(self, msgtext, chat_id):
+        global bot_g, botname_g # TODO: move the global botname_g to within the bot instance
 
         # support message@botname
         if msgtext.endswith("@{}".format(botname_g)):
             msgtext = msgtext[:-len("@{}".format(botname_g))]
             #print('got rid of ending. now it\'s only {}'.format(msgtext))
 
-	messageChoices = {
+        messageChoices = {
                 '/test': lambda: 'test',
                 '/help': lambda: 'This is a very helpful message indeed.',
                 '/start':lambda: 'Hey. I don\'t do stuff yet.',
-                '/func':msgIn_testfunction,
-                '/mam':msgIn_mam
-	}
-	result = messageChoices.get(msgtext.lower(), None)()
+                '/func':self.msgIn_testfunction,
+                '/mam':self.msgIn_mam
+        }
+        result = messageChoices.get(msgtext.lower(), None)()
+        print("trying to send {}".format(result))
 
-	if result == None:
-		bot_g.sendMessage(chat_id, 'defaulting to default message')
+        if result == None:
+                self.sender.sendMessage('defaulting to default message')
         elif result == "":
             pass
-	else: # send message as specified in dictionary
-		bot_g.sendMessage(chat_id, result)
+        else: # send message as specified in dictionary
+                self.sender.sendMessage(result) # automatically selects chat_id
 
-	return result
+        return result
+    # Any functions starting with msgIn_ are called when the respective message was received
+    # The functions used in txtMsgSwitch are expected to return a reply string. If the reply string is the empty string, no reply will be sent.
+    def msgIn_testfunction(self):
+        return "testfunction works!"
+
+    def msgIn_mam(self):
+        # TODO: start a dialog
+        return "finished mam"
 
 # setup a new logger
 def setup_logger(name, log_file, formatter, level=logging.INFO, printout=True):
@@ -102,15 +119,6 @@ def setup_logger(name, log_file, formatter, level=logging.INFO, printout=True):
 		logger.addHandler(out)
 
 	return logger
-
-# Any functions starting with msgIn_ are called when the respective message was received
-# The functions used in txtMsgSwitch are expected to return a reply string. If the reply string is the empty string, no reply will be sent.
-def msgIn_testfunction():
-    return "testfunction works!"
-
-def msgIn_mam():
-    # TODO: start a dialog
-    return "finished mam"
 
 def main(): # starts everything
 	global bot_g, formatter_g, logger_g, botname_g
@@ -134,13 +142,20 @@ def main(): # starts everything
 	finally:
 		f.close()
 	token = secret_config['mainconfig']['token']
-	bot_g = telepot.Bot(token)
+	bot_g = telepot.DelegatorBot(token, [
+            telepot.delegate.pave_event_space()(
+                    telepot.delegate.per_chat_id(),
+                    telepot.delegate.create_open,
+                    ShiverBot,
+                    timeout=600 # 10 minutes
+                ),
+            ])
         # store username of the bot
         botname_g = bot_g.getMe()['username']
         print 'I am {}'.format(botname_g)
 
 	# run listener
-	telepot.loop.MessageLoop(bot_g, handle).run_as_thread()
+	telepot.loop.MessageLoop(bot_g).run_as_thread()
 	print 'I am listening...'
 
 	while 1:
