@@ -97,7 +97,7 @@ def setup_logger(name, log_file, formatter, level=logging.INFO, printout=True):
 	return logger
 
 def main(): # starts everything
-	global bot_g, formatter_g, logger_g
+	global bot_g, formatter_g, logger_g, botname_g
 	# prepare log formatter
 	f = open(GENERAL_CONFIG_FILE)
 	try:
@@ -119,6 +119,10 @@ def main(): # starts everything
 		f.close()
 	token = secret_config['mainconfig']['token']
 	bot_g = telepot.Bot(token)
+        # store username of the bot
+        botname_g = bot_g.getMe()['username']
+        print 'I am {}'.format(botname_g)
+
 	# run listener
 	telepot.loop.MessageLoop(bot_g, handle).run_as_thread()
 	print 'I am listening...'
