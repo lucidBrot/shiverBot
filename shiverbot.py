@@ -31,6 +31,10 @@ logger_g = None # defined in main / on module import
 class ShiverBot(telepot.helper.ChatHandler):
     def __init__(self, *args, **kwargs):
         super(ShiverBot, self).__init__(*args, **kwargs)
+        self.mam_counter = 0 # which mam message to send next
+        self.default_choice = lambda: None # which function to proceed with if there was no new command entered
+        # If a previous command is still running and you enter a new command, the new command will be executed (and will set default_choice either to itself again or to None if it is done. This includes every command, because they might have aborted some previous command. To make this easy, just call self.cleanDefaultChoice()
+        # This is a function that returns the response to the next query
 
     def on_chat_message(self, msg):
         self.handle(msg)
@@ -68,7 +72,7 @@ class ShiverBot(telepot.helper.ChatHandler):
 
     # to be used to map messages to actions
     def txtMsgSwitch(self, msgtext, chat_id):
-        global bot_g, botname_g # TODO: move the global botname_g to within the bot instance
+        global logger_g, bot_g, botname_g # TODO: move the global botname_g to within the bot instance
 
         # support message@botname
         if msgtext.endswith("@{}".format(botname_g)):
@@ -76,14 +80,15 @@ class ShiverBot(telepot.helper.ChatHandler):
             #print('got rid of ending. now it\'s only {}'.format(msgtext))
 
         messageChoices = {
-                '/test': lambda: 'test',
+                '/test': self.choice('test'), # TODO: use this function for the other strings as well. # TODO: fix it first. currently, it's being called when the dictionary is initialized... we don't want that. see https://stackoverflow.com/questions/13783211/python-how-to-pass-an-argument-to-a-function-pointer-parameter
                 '/help': lambda: 'This is a very helpful message indeed.',
                 '/start':lambda: 'Hey. I don\'t do stuff yet.',
                 '/func':self.msgIn_testfunction,
                 '/mam':self.msgIn_mam
         }
-        result = messageChoices.get(msgtext.lower(), None)()
-        print("trying to send {}".format(result))
+        # default_choice is stored in self. Might be set by functions that want to form a conversation thread
+        result = messageChoices.get(msgtext.lower(), self.default_choice)()
+        logger_g.info("To {1}  sending <{0}>".format(result, chat_id))
 
         if result == None:
                 self.sender.sendMessage('defaulting to default message')
@@ -93,6 +98,23 @@ class ShiverBot(telepot.helper.ChatHandler):
                 self.sender.sendMessage(result) # automatically selects chat_id
 
         return result
+
+    # set default choice to None or the given choice and clean up any previously running command that was aborted
+    # it was aborted if the default choice was not None, because every command must set that to None after it's done.
+    def cleanDefaultChoice(self, new_choice=lambda:None):
+        #TODO: clean up previous state if needed
+        if self.default_choice == self.msgIn_mam:
+            self.mam_counter = 0
+            print("the previous command was mam. it has been aborted and now cleaned up.")
+        self.default_choice = new_choice
+
+    # intended to be put into the messageChoices dictionary
+    # sets the new default choice and returns the reply string
+    # if you give no new default, it will use the function that returns none
+    def choice(self, reply, new_default=lambda:None):
+        self.cleanDefaultChoice(new_default)
+        return reply
+
     # Any functions starting with msgIn_ are called when the respective message was received
     # The functions used in txtMsgSwitch are expected to return a reply string. If the reply string is the empty string, no reply will be sent.
     def msgIn_testfunction(self):
@@ -100,7 +122,16 @@ class ShiverBot(telepot.helper.ChatHandler):
 
     def msgIn_mam(self):
         # TODO: start a dialog
-        return "finished mam"
+        mamList=["Please choose a title",
+                "Please enter some text",
+                "Please choose an image"]
+        # plase call this function again when the user replies with something that is not a command (unless we're done)
+        if self.mam_counter < len(mamList)-1: # TODO: fix this logic
+            self.default_choice = self.msgIn_mam
+        else:
+            self.cleanDefaultChoice()
+        self.mam_counter = 0 if self.mam_counter==len(mamList)-1 else self.mam_counter+1
+        return mamList[self.mam_counter]
 
 # setup a new logger
 def setup_logger(name, log_file, formatter, level=logging.INFO, printout=True):
