@@ -71,13 +71,15 @@ def txtMsgSwitch(msgtext, chat_id):
                 '/test': lambda: 'test',
                 '/help': lambda: 'This is a very helpful message indeed.',
                 '/start':lambda: 'Hey. I don\'t do stuff yet.',
-                '/func':testfunction
+                '/func':msgIn_testfunction,
+                '/mam':msgIn_mam
 	}
-	result = messageChoices.get(msgtext, None)()
+	result = messageChoices.get(msgtext.lower(), None)()
 
 	if result == None:
 		bot_g.sendMessage(chat_id, 'defaulting to default message')
-	# elif any cases that should be handled elsewhere
+        elif result == "":
+            pass
 	else: # send message as specified in dictionary
 		bot_g.sendMessage(chat_id, result)
 
@@ -101,9 +103,14 @@ def setup_logger(name, log_file, formatter, level=logging.INFO, printout=True):
 
 	return logger
 
-def testfunction():
+# Any functions starting with msgIn_ are called when the respective message was received
+# The functions used in txtMsgSwitch are expected to return a reply string. If the reply string is the empty string, no reply will be sent.
+def msgIn_testfunction():
     return "testfunction works!"
 
+def msgIn_mam():
+    # TODO: start a dialog
+    return "finished mam"
 
 def main(): # starts everything
 	global bot_g, formatter_g, logger_g, botname_g
