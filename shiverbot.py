@@ -79,7 +79,6 @@ class ShiverBot(telepot.helper.ChatHandler):
             msgtext = msgtext[:-len("@{}".format(botname_g))]
             #print('got rid of ending. now it\'s only {}'.format(msgtext))
 
-        # TODO: somehow add message mappings that only need to start with the correct string.
         messageChoices = { # dictionary functions are expected to take the message text as argument and return an answer that will be sent to the user
                 '/test': self.choice('test'),
                 '/help': self.choice('This is a very helpful message indeed.'),
@@ -87,9 +86,15 @@ class ShiverBot(telepot.helper.ChatHandler):
                 '/func': self.choice(self.msgIn_testfunction),
                 '/mam':self.msgIn_mam # not using choice by design: msgIn_mam decides by itself when to clean the default value.
         }
+
+        [msgCommand, msgContent] = msgtext.split(' ',1) # split on first space
+        if msgCommand not in messageChoices:
+            msgContent = "{0} {1}".format(msgCommand, msgContent) # re-add space and make the whole thing content if it's not in the dict
+            # leave msgCommand the same so that the next query will also decide that it is not in the dictionary and then forward the whole string in msgContent
+        
         # default_choice is stored in self. Might be set by functions that want to form a conversation thread
         # If the new message is not a command, do not wipe the current state.
-        result = messageChoices.get(msgtext.lower(), self.choice(self.default_choice, reset_state=False))(msgtext)
+        result = messageChoices.get(msgCommand.lower(), self.choice(self.default_choice, reset_state=False))(msgContent)
         logger_g.info("To {1}  sending <{0}>".format(result, chat_id))
 
         if result == None:
