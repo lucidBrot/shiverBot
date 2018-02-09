@@ -80,11 +80,11 @@ class ShiverBot(telepot.helper.ChatHandler):
             #print('got rid of ending. now it\'s only {}'.format(msgtext))
 
         messageChoices = {
-                '/test': self.choice('test'), # TODO: use this function for the other strings as well. # TODO: fix it first. currently, it's being called when the dictionary is initialized... we don't want that. see https://stackoverflow.com/questions/13783211/python-how-to-pass-an-argument-to-a-function-pointer-parameter
-                '/help': lambda: 'This is a very helpful message indeed.',
-                '/start':lambda: 'Hey. I don\'t do stuff yet.',
-                '/func':self.msgIn_testfunction,
-                '/mam':self.msgIn_mam
+                '/test': self.choice('test'), # equivalent to   lambda: 'test'   when the parameter is a string
+                '/help': self.choice('This is a very helpful message indeed.'),
+                '/start': self.choice('Hey. I don\'t do stuff yet.'),
+                '/func': self.choice(self.msgIn_testfunction),
+                '/mam':self.msgIn_mam # not using choice by design: msgIn_mam decides by itself when to clean the default value.
         }
         # default_choice is stored in self. Might be set by functions that want to form a conversation thread
         result = messageChoices.get(msgtext.lower(), self.default_choice)()
@@ -102,7 +102,8 @@ class ShiverBot(telepot.helper.ChatHandler):
     # set default choice to None or the given choice and clean up any previously running command that was aborted
     # it was aborted if the default choice was not None, because every command must set that to None after it's done.
     def cleanDefaultChoice(self, new_choice=lambda:None):
-        #TODO: clean up previous state if needed
+        # TODO: clean the state of function-specific variables. Maybe use a dictionary for that.
+        # clean up previous state if needed
         if self.default_choice == self.msgIn_mam:
             self.mam_counter = 0
             print("the previous command was mam. it has been aborted and now cleaned up.")
@@ -128,13 +129,17 @@ class ShiverBot(telepot.helper.ChatHandler):
         mamList=["Please choose a title",
                 "Please enter some text",
                 "Please choose an image"]
-        # plase call this function again when the user replies with something that is not a command (unless we're done)
-        if self.mam_counter < len(mamList)-1: # TODO: fix this logic
+
+        self.mam_counter += 1
+        # "please call this function again when the user replies with something that is not a command"
+        # if the next message would be out of bounds, reset the default choice and my state. otherwise make sure that we are called again.
+        if self.mam_counter < len(mamList):
             self.default_choice = self.msgIn_mam
         else:
-            self.cleanDefaultChoice()
-        self.mam_counter = 0 if self.mam_counter==len(mamList)-1 else self.mam_counter+1
-        return mamList[self.mam_counter]
+            self.cleanDefaultChoice() # do that at the end of this function, because it resets mams state also.
+            # This already does mam_counter = 0
+        
+        return mamList[self.mam_counter-1] # current message
 
 # setup a new logger
 def setup_logger(name, log_file, formatter, level=logging.INFO, printout=True):
