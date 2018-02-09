@@ -87,10 +87,14 @@ class ShiverBot(telepot.helper.ChatHandler):
                 '/mam':self.msgIn_mam # not using choice by design: msgIn_mam decides by itself when to clean the default value.
         }
 
-        [msgCommand, msgContent] = msgtext.split(' ',1) # split on first space
-        if msgCommand not in messageChoices:
-            msgContent = "{0} {1}".format(msgCommand, msgContent) # re-add space and make the whole thing content if it's not in the dict
-            # leave msgCommand the same so that the next query will also decide that it is not in the dictionary and then forward the whole string in msgContent
+        if msgtext.count(' ') > 0:
+            [msgCommand, msgContent] = msgtext.split(' ',1) # split on first space
+            if msgCommand not in messageChoices:
+                msgContent = "{0} {1}".format(msgCommand, msgContent) # re-add space and make the whole thing content if it's not in the dict
+                # leave msgCommand the same so that the next query will also decide that it is not in the dictionary and then forward the whole string in msgContent
+        else:
+            msgCommand = msgtext
+            msgContent = None if msgtext in messageChoices else msgtext # set content to the whole message text if there's no mapping for it, because then we direct it on as a string in the next query (that will fail as well, because msgCommand is the same as msgtext.
         
         # default_choice is stored in self. Might be set by functions that want to form a conversation thread
         # If the new message is not a command, do not wipe the current state.
@@ -135,8 +139,10 @@ class ShiverBot(telepot.helper.ChatHandler):
 
     def msgIn_mam(self, message_text):
         # TODO: start a dialog
+        # TODO: /mam while during mam should stop this mam and start a new one
+        # TODO: feature "/mam all parameters" as a single command?
         mamList=["Please choose a title",
-                "Please enter some text",
+                "{} Please enter some text".format("You set the title to {}. ".format(message_text)),
                 "Please choose an image"]
 
         self.mam_counter += 1
