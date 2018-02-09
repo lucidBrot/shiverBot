@@ -109,11 +109,14 @@ class ShiverBot(telepot.helper.ChatHandler):
         self.default_choice = new_choice
 
     # intended to be put into the messageChoices dictionary
-    # sets the new default choice and returns the reply string
-    # if you give no new default, it will use the function that returns none
+    # returns a function that    sets the new default choice and returns the reply string
+    # if you give no new default, it will use the function that returns none. This causes the current implementation of the txtMsgSwitch function to default to some default message.
     def choice(self, reply, new_default=lambda:None):
-        self.cleanDefaultChoice(new_default)
-        return reply
+        # in order for the clean to not be applied every time the dictionary is initialized, we define a new function within this function
+        def result_f():
+            self.cleanDefaultChoice(new_default)
+            return reply() if callable(reply) else lambda : reply # if reply is a function, return that functions return value, otherwise return the reply (string assumingly)
+        return result_f
 
     # Any functions starting with msgIn_ are called when the respective message was received
     # The functions used in txtMsgSwitch are expected to return a reply string. If the reply string is the empty string, no reply will be sent.
