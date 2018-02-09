@@ -32,7 +32,7 @@ class ShiverBot(telepot.helper.ChatHandler):
     def __init__(self, *args, **kwargs):
         super(ShiverBot, self).__init__(*args, **kwargs)
         self.mam_counter = 0 # which mam message to send next
-        self.default_choice = lambda: None # which function to proceed with if there was no new command entered
+        self.default_choice = self.choice(None, reset_state=False, new_default=lambda msgtext:None) # which function to proceed with if there was no new command entered
         # If a previous command is still running and you enter a new command, the new command will be executed (and will set default_choice either to itself again or to None if it is done. This includes every command, because they might have aborted some previous command. To make this easy, just call self.cleanDefaultChoice()
         # This is a function that returns the response to the next query
 
@@ -50,7 +50,7 @@ class ShiverBot(telepot.helper.ChatHandler):
             elif content_type == 'document':
                     self.handleDocument(msg)
             elif content_type == 'photo':
-                    self.handlePhoto
+                    self.handlePhoto(msg)
 
 
     # what should be done if a text message is received
@@ -79,15 +79,17 @@ class ShiverBot(telepot.helper.ChatHandler):
             msgtext = msgtext[:-len("@{}".format(botname_g))]
             #print('got rid of ending. now it\'s only {}'.format(msgtext))
 
-        messageChoices = {
-                '/test': self.choice('test'), # equivalent to   lambda: 'test'   when the parameter is a string
+        # TODO: somehow add message mappings that only need to start with the correct string.
+        messageChoices = { # dictionary functions are expected to take the message text as argument and return an answer that will be sent to the user
+                '/test': self.choice('test'),
                 '/help': self.choice('This is a very helpful message indeed.'),
                 '/start': self.choice('Hey. I don\'t do stuff yet.'),
                 '/func': self.choice(self.msgIn_testfunction),
                 '/mam':self.msgIn_mam # not using choice by design: msgIn_mam decides by itself when to clean the default value.
         }
         # default_choice is stored in self. Might be set by functions that want to form a conversation thread
-        result = messageChoices.get(msgtext.lower(), self.default_choice)()
+        # If the new message is not a command, do not wipe the current state.
+        result = messageChoices.get(msgtext.lower(), self.choice(self.default_choice, reset_state=False))(msgtext)
         logger_g.info("To {1}  sending <{0}>".format(result, chat_id))
 
         if result == None:
@@ -101,8 +103,8 @@ class ShiverBot(telepot.helper.ChatHandler):
 
     # set default choice to None or the given choice and clean up any previously running command that was aborted
     # it was aborted if the default choice was not None, because every command must set that to None after it's done.
-    def cleanDefaultChoice(self, new_choice=lambda:None):
-        # TODO: clean the state of function-specific variables. Maybe use a dictionary for that.
+    def cleanDefaultChoice(self, new_choice=lambda msgtext:None):
+        # TODO: clean the state of function-specific variables. Maybe use a dictionary for that. Or better, a mam object that features a cleanMyState function? No that would be difficult because we have a common default value that we want to access. a dict should suffice.
         # clean up previous state if needed
         if self.default_choice == self.msgIn_mam:
             self.mam_counter = 0
@@ -112,19 +114,21 @@ class ShiverBot(telepot.helper.ChatHandler):
     # intended to be put into the messageChoices dictionary
     # returns a function that    sets the new default choice and returns the reply string
     # if you give no new default, it will use the function that returns none. This causes the current implementation of the txtMsgSwitch function to default to some default message.
-    def choice(self, reply, new_default=lambda:None):
+    # set reset_state to false if you want to use this only as a wrapper function without a side-effect of cleaning the state variables
+    def choice(self, reply, new_default=lambda msgtext:None, reset_state=True):
         # in order for the clean to not be applied every time the dictionary is initialized, we define a new function within this function
-        def result_f():
-            self.cleanDefaultChoice(new_default)
-            return reply() if callable(reply) else lambda : reply # if reply is a function, return that functions return value, otherwise return the reply (string assumingly)
+        def result_f(received_msg_text):
+            if reset_state:
+                self.cleanDefaultChoice(new_default)
+            return reply(received_msg_text) if callable(reply) else reply # if reply is a function, return that functions return value, otherwise return the reply (string assumingly)
         return result_f
 
     # Any functions starting with msgIn_ are called when the respective message was received
     # The functions used in txtMsgSwitch are expected to return a reply string. If the reply string is the empty string, no reply will be sent.
-    def msgIn_testfunction(self):
-        return "testfunction works!"
+    def msgIn_testfunction(self, msgtext):
+        return "testfunction works! {0}".format(msgtext)
 
-    def msgIn_mam(self):
+    def msgIn_mam(self, message_text):
         # TODO: start a dialog
         mamList=["Please choose a title",
                 "Please enter some text",
