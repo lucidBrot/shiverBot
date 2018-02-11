@@ -36,9 +36,8 @@ class ShiverBot(telepot.helper.ChatHandler):
         # If a previous command is still running and you enter a new command, the new command will be executed (and will set default_choice either to itself again or to None if it is done. This includes every command, because they might have aborted some previous command. To make this easy, just call self.cleanDefaultChoice()
         # This is a function that returns the response to the next query
 
-        # initialize own name
-        self.name = self.getMe()['username']
-        print 'I am {}'.format(self.name)
+        # prepare field for later use
+        self.name = None
 
     def on_chat_message(self, msg):
         self.handle(msg)
@@ -209,6 +208,9 @@ def main(): # starts everything
                 ),
             ])
 
+        # initialize own name
+        bot_g.name = bot_g.getMe()['username']
+        print 'I am {}'.format(bot_g.name)
 
 	# run listener
 	telepot.loop.MessageLoop(bot_g).run_as_thread()
