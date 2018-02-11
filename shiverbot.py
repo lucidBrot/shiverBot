@@ -36,6 +36,10 @@ class ShiverBot(telepot.helper.ChatHandler):
         # If a previous command is still running and you enter a new command, the new command will be executed (and will set default_choice either to itself again or to None if it is done. This includes every command, because they might have aborted some previous command. To make this easy, just call self.cleanDefaultChoice()
         # This is a function that returns the response to the next query
 
+        # initialize own name
+        self.name = self.getMe()['username']
+        print 'I am {}'.format(self.name)
+
     def on_chat_message(self, msg):
         self.handle(msg)
 
@@ -72,11 +76,11 @@ class ShiverBot(telepot.helper.ChatHandler):
 
     # to be used to map messages to actions
     def txtMsgSwitch(self, msgtext, chat_id):
-        global logger_g, bot_g, botname_g # TODO: move the global botname_g to within the bot instance
+        global logger_g, bot_g 
 
         # support message@botname
-        if msgtext.endswith("@{}".format(botname_g)):
-            msgtext = msgtext[:-len("@{}".format(botname_g))]
+        if msgtext.endswith("@{}".format(bot_g.name)):
+            msgtext = msgtext[:-len("@{}".format(bot_g.name))]
             #print('got rid of ending. now it\'s only {}'.format(msgtext))
 
         messageChoices = { # dictionary functions are expected to take the message text as argument and return an answer that will be sent to the user
@@ -175,7 +179,7 @@ def setup_logger(name, log_file, formatter, level=logging.INFO, printout=True):
 	return logger
 
 def main(): # starts everything
-	global bot_g, formatter_g, logger_g, botname_g
+	global bot_g, formatter_g, logger_g 
 	# prepare log formatter
 	f = open(GENERAL_CONFIG_FILE)
 	try:
@@ -204,9 +208,7 @@ def main(): # starts everything
                     timeout=600 # 10 minutes
                 ),
             ])
-        # store username of the bot
-        botname_g = bot_g.getMe()['username']
-        print 'I am {}'.format(botname_g)
+
 
 	# run listener
 	telepot.loop.MessageLoop(bot_g).run_as_thread()
