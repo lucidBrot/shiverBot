@@ -25,8 +25,8 @@ class Shiroutine(object):
     # start the shiroutine anew because a new command for it was received.
     # Called from the command-mapping dictionary
     def start(self, msgtext):
-        self.cleanup(self)
-        self.run(self, msgtext)
+        self.cleanup()
+        return self.run(msgtext)
 
     # playing around with the property decorator
     @property
@@ -38,7 +38,7 @@ class Shiroutine(object):
         self._counter = value
 
 ''' Requirements for the function passed in as setNextDefault:
-        must take a Shiroutine as an argument
+        must take a function as an argument
         must accept None as a valid input argument => set next routine to default'''
 
 
@@ -72,5 +72,10 @@ class MamShiroutine(Shiroutine):
         else:
             self.setNextDefaultRoutine(None)
             i = self.counter - 1
-            self.cleanup(self) # reset counter
+            self.cleanup() # reset counter
         return mamList[i]
+
+# Testroutine
+class TestShiroutine(Shiroutine):
+    def run(self, msgtext):
+        return "testroutine works! {0}".format(msgtext)
