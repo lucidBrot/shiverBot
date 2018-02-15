@@ -10,12 +10,14 @@ class Shiroutine(object):
 
     def __init__(self, setNextDefault, initialState={}):
         self.state = initialState
+        self.initialState = initialState
         self.setNextDefaultRoutine = setNextDefault
         self._counter = 0
 
     # reset to a clean state on receival of a new command
     def cleanup(self):
         self.counter = 0
+        self.state = initialState
 
     # a function that every Shiroutine needs to provide
     # Called from the next_Default routine setting
@@ -46,6 +48,7 @@ class Shiroutine(object):
 class MamShiroutine(Shiroutine):
     # INHERITED:
     # dict self.state
+    # dict self.initialState
     # func self.setNextDefaultRoutine
     # int  self.counter
     
@@ -72,7 +75,7 @@ class MamShiroutine(Shiroutine):
             self.setNextDefaultRoutine(self.run) # We want to be called again on the next message
         else:
             self.setNextDefaultRoutine(None)
-            self.cleanup() # reset counter
+            self.cleanup() # reset counter and state
         return mamList[i]
 
 # Testroutine
