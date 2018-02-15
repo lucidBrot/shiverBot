@@ -1,6 +1,11 @@
 # Copyright (C) Eric Mink 2018
-# This file is an attempt at getting rid of my ugly stateful functions
 
+# import makeAboveMeme either from subdirectory or from global installation.
+# Thus, it would be possible to use the global version if no subdir version is installed.
+try:
+    from MakeAboveMeme.mAm import makeAboveMeme as mAm
+except ImportError:
+    import mAm
 
 # A Shiroutine is a function with a state, which can be cleaned from any other function, resetting the Shiroutine to a default state.
 class Shiroutine(object):
@@ -77,6 +82,26 @@ class MamShiroutine(Shiroutine):
             self.setNextDefaultRoutine(None)
             self.cleanup() # reset counter and state
         return mamList[i]
+
+    def callMam():
+        # TODO: temporary output file
+        # TODO: actually use this function, pass it some params
+        arguments = {
+            '--comments': None,
+            '--help': False,
+            '--image': None,
+            '--link': None,
+            '--out': './aboveMeme.png',
+            '--points': None,
+            '--tag': [],
+            '--text': None,
+            '--title': None,
+            '--version': False,
+            '-C': None,
+            '-X': False
+        }
+        mAm.main(arguments)
+
 
 # Testroutine
 class TestShiroutine(Shiroutine):
