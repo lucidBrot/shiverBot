@@ -3,32 +3,74 @@
 
 
 # A Shiroutine is a function with a state, which can be cleaned from any other function, resetting the Shiroutine to a default state.
-class Shiroutine(Object):
+class Shiroutine(object):
     # self.state is a dictionary with whatever state the Shiroutine needs
     # self.setNextDefaultRoutine is a function to set the global variable for the next Shiroutine to execute
+    # self.counter is the number of times this routine was called in succession (without restarting it by typing the same command again)
 
     def __init__(self, setNextDefault, initialState={}):
         self.state = initialState
         self.setNextDefaultRoutine = setNextDefault
+        self._counter = 0
 
-    # reset to a clean state
-    def reset(self, initialState={}):
-        pass
+    # reset to a clean state on receival of a new command
+    def cleanup(self):
+        self.counter = 0
 
     # a function that every Shiroutine needs to provide
+    # Called from the next_Default routine setting
     def run(self, msgtext):
         pass
 
+    # start the shiroutine anew because a new command for it was received.
+    # Called from the command-mapping dictionary
+    def start(self, msgtext):
+        self.cleanup(self)
+        self.run(self, msgtext)
+
+    # playing around with the property decorator
+    @property
+    def counter(self):
+        return self._counter
+
+    @counter.setter
+    def counter(self, value):
+        self._counter = value
+
+''' Requirements for the function passed in as setNextDefault:
+        must take a Shiroutine as an argument
+        must accept None as a valid input argument => set next routine to default'''
 
 
+# Make Above Meme
 class MamShiroutine(Shiroutine):
+    # INHERITED:
+    # dict self.state
+    # func self.setNextDefaultRoutine
+    # int  self.counter
     
     def __init__(self, setNextDefault, initialState={}):
         super(Shiroutine, self, setNextDefault, initialState)
 
-    def reset(self, initialState={}):
-        self.state = initialState
+    def cleanup(self):
+        # super resets the counter
+        super(self)
 
     def run(self, msgtext):
-        pass # TODO: paste mam function here, and add a list of functions that might need to be reset in the global class
-
+        super(self, msgtext)
+        mamList = [
+            "Please choose a title",
+            "You set the title to {0}. Please enter some text.".format(msgtext),
+            "Please choose an image",
+                ]
+        # TODO: store inputs in self.state
+        # TODO: actually use them to call makeAboveMeme
+        self.counter += 1
+        # if the next message would be out of bounds, reset the default choice and my state. Otherwise make sure that we are called again.
+        if self.counter < len(mamList):
+            self.setNextDefaultRoutine(self) # We want to be called again on the next message
+        else:
+            self.setNextDefaultRoutine(None)
+            i = self.counter - 1
+            self.cleanup(self) # reset counter
+        return mamList[i]

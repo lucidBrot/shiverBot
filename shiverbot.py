@@ -39,6 +39,8 @@ class ShiverBot(telepot.helper.ChatHandler):
         # prepare field for later use
         self.name = None
 
+        # shiroutines (TODO clean them up later. store them in a field)
+
     def on_chat_message(self, msg):
         self.handle(msg)
 
@@ -225,4 +227,4 @@ def main(): # starts everything
 if __name__=="__main__":
 	main()
 else:
-	logger_g = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=formatter_g)
+	logger_g = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=formatter_g, printout=False)
