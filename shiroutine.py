@@ -50,14 +50,14 @@ class MamShiroutine(Shiroutine):
     # int  self.counter
     
     def __init__(self, setNextDefault, initialState={}):
-        super(Shiroutine, self, setNextDefault, initialState)
+        super(MamShiroutine, self).__init__(setNextDefault, initialState)
 
     def cleanup(self):
         # super resets the counter
-        super(self)
+        super(MamShiroutine, self)
 
     def run(self, msgtext):
-        super(self, msgtext)
+        super(MamShiroutine, self).run(msgtext)
         mamList = [
             "Please choose a title",
             "You set the title to {0}. Please enter some text.".format(msgtext),
@@ -66,16 +66,17 @@ class MamShiroutine(Shiroutine):
         # TODO: store inputs in self.state
         # TODO: actually use them to call makeAboveMeme
         self.counter += 1
+        i = self.counter - 1
         # if the next message would be out of bounds, reset the default choice and my state. Otherwise make sure that we are called again.
         if self.counter < len(mamList):
             self.setNextDefaultRoutine(self) # We want to be called again on the next message
         else:
             self.setNextDefaultRoutine(None)
-            i = self.counter - 1
             self.cleanup() # reset counter
         return mamList[i]
 
 # Testroutine
 class TestShiroutine(Shiroutine):
     def run(self, msgtext):
+        super(TestShiroutine, self).run(msgtext)
         return "testroutine works! {0}".format(msgtext)

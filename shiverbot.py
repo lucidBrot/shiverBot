@@ -10,7 +10,7 @@ import yaml
 import logging
 import re # regex
 import os # current directory
-import shiroutine
+import shiroutine as SR
 
 # global variable for the bot_g. Using secret token from config file. That is loaded in main.
 # IF YOU'RE IMPORTING THIS FILE, MAKE SURE TO SET bot_g
@@ -86,16 +86,16 @@ class ShiverBot(telepot.helper.ChatHandler):
             #print('got rid of ending. now it\'s only {}'.format(msgtext))
         
         def tempF(x):
-            print("temporary shiroutine tried to set next default to {}".format(x))
+            logger_g.debug("temporary shiroutine tried to set next default to {}".format(x))
 
-        tempShiR = shiroutine.TestShiroutine(tempF)
         messageChoices = { # dictionary functions are expected to take the message text as argument and return an answer that will be sent to the user
                 '/test': self.choice('test'),
-                '/help': self.choice('This is a very helpful message indeed.'),
-                '/start': self.choice('Hey. I don\'t do stuff yet.'),
+                '/help': self.choice('This is a very helpful message indeed.'), # TODO: better help message
+                '/start': self.choice('Hey. I don\'t do stuff yet.'), # TODO: better start message
                 '/func': self.choice(self.msgIn_testfunction),
                 '/mam':self.msgIn_mam, # not using choice by design: msgIn_mam decides by itself when to clean the default value.
-                '/rout':tempShiR.start
+                '/rout':SR.TestShiroutine(setNextDefault=lambda x:None).start,
+                '/mam2': SR.MamShiroutine(tempF).start,
         }
 
         if msgtext.count(' ') > 0:

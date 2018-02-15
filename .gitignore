@@ -1,3 +1,4 @@
 secret_config.yml
+*.pyc
 *.swp
 *.log
