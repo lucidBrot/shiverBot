@@ -32,9 +32,8 @@ logger_g = None # defined in main / on module import
 class ShiverBot(telepot.helper.ChatHandler):
     def __init__(self, *args, **kwargs):
         super(ShiverBot, self).__init__(*args, **kwargs)
-        self.mam_counter = 0 # which mam message to send next
-        self.default_choice = self.choice(None, reset_state=False, new_default=lambda msgtext:None) # which function to proceed with if there was no new command entered
-        # If a previous command is still running and you enter a new command, the new command will be executed (and will set default_choice either to itself again or to None if it is done. This includes every command, because they might have aborted some previous command. To make this easy, just call self.cleanDefaultChoice()
+        self.default_choice = self.choice(reply=None, reset_state=False, new_default=lambda msgtext:None) # which function to proceed with if there was no new command entered
+        # If a previous command is still running and you enter a new command, the new command will be executed (and will set default_choice either to itself again or to None if it is done. This includes every command, because they might have aborted some previous command.
         # This is a function that returns the response to the next query
 
         # prepare field for later use
@@ -78,16 +77,9 @@ class ShiverBot(telepot.helper.ChatHandler):
 
     # to be used to map messages to actions
     def txtMsgSwitch(self, msgtext, chat_id):
-        global logger_g, bot_g 
+        global logger_g, bot_g
 
-        # support message@botname
-        if msgtext.endswith("@{}".format(bot_g.name)):
-            msgtext = msgtext[:-len("@{}".format(bot_g.name))]
-            #print('got rid of ending. now it\'s only {}'.format(msgtext))
-        
-        def tempF(x):
-            logger_g.debug("temporary shiroutine tried to set next default to {}".format(x))
-
+        # initializes a routine anew whenever this dictionary is used (i.e. when a message arrives) because otherwise multiple users would share the same state.
         messageChoices = { # dictionary functions are expected to take the message text as argument and return an answer that will be sent to the user
                 '/test': self.choice('test'),
                 '/help': self.choice('This is a very helpful message indeed.'), # TODO: better help message
@@ -95,8 +87,13 @@ class ShiverBot(telepot.helper.ChatHandler):
                 '/func': self.choice(self.msgIn_testfunction),
                 '/mam':self.msgIn_mam, # not using choice by design: msgIn_mam decides by itself when to clean the default value.
                 '/rout':SR.TestShiroutine(setNextDefault=lambda x:None).start,
-                '/mam2': SR.MamShiroutine(tempF).start,
-        }
+                '/mam2': SR.MamShiroutine(self.setNextDefault).start,
+                }
+
+        # support message@botname
+        if msgtext.endswith("@{}".format(bot_g.name)):
+            msgtext = msgtext[:-len("@{}".format(bot_g.name))]
+            #print('got rid of ending. now it\'s only {}'.format(msgtext)) 
 
         if msgtext.count(' ') > 0:
             [msgCommand, msgContent] = msgtext.split(' ',1) # split on first space
@@ -120,6 +117,9 @@ class ShiverBot(telepot.helper.ChatHandler):
                 self.sender.sendMessage(result) # automatically selects chat_id
 
         return result
+
+    def setNextDefault(self, next_default_f):
+        self.default_choice = next_default_f
 
     # set default choice to None or the given choice and clean up any previously running command that was aborted
     # it was aborted if the default choice was not None, because every command must set that to None after it's done.

@@ -69,7 +69,7 @@ class MamShiroutine(Shiroutine):
         i = self.counter - 1
         # if the next message would be out of bounds, reset the default choice and my state. Otherwise make sure that we are called again.
         if self.counter < len(mamList):
-            self.setNextDefaultRoutine(self) # We want to be called again on the next message
+            self.setNextDefaultRoutine(self.run) # We want to be called again on the next message
         else:
             self.setNextDefaultRoutine(None)
             self.cleanup() # reset counter
