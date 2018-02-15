@@ -39,8 +39,6 @@ class ShiverBot(telepot.helper.ChatHandler):
         # prepare field for later use
         self.name = None
 
-        # shiroutines (TODO clean them up later. store them in a field)
-
     def on_chat_message(self, msg):
         self.handle(msg)
 
@@ -81,13 +79,11 @@ class ShiverBot(telepot.helper.ChatHandler):
 
         # initializes a routine anew whenever this dictionary is used (i.e. when a message arrives) because otherwise multiple users would share the same state.
         messageChoices = { # dictionary functions are expected to take the message text as argument and return an answer that will be sent to the user
-                '/test': self.choice('test'),
+                '/test': self.choice('test'), # choice cleans the default routine and then calls the reply or a str
                 '/help': self.choice('This is a very helpful message indeed.'), # TODO: better help message
                 '/start': self.choice('Hey. I don\'t do stuff yet.'), # TODO: better start message
-                '/func': self.choice(self.msgIn_testfunction),
-                '/mam':self.msgIn_mam, # not using choice by design: msgIn_mam decides by itself when to clean the default value.
+                '/mam':SR.MamShiroutine(self.setNextDefault).start, # not using choice by design: mam decides by itself when to clean the default value.
                 '/rout':SR.TestShiroutine(setNextDefault=lambda x:None).start,
-                '/mam2': SR.MamShiroutine(self.setNextDefault).start,
                 }
 
         # support message@botname
@@ -121,16 +117,6 @@ class ShiverBot(telepot.helper.ChatHandler):
     def setNextDefault(self, next_default_f):
         self.default_choice = next_default_f
 
-    # set default choice to None or the given choice and clean up any previously running command that was aborted
-    # it was aborted if the default choice was not None, because every command must set that to None after it's done.
-    def cleanDefaultChoice(self, new_choice=lambda msgtext:None):
-        # TODO: clean the state of function-specific variables. Maybe use a dictionary for that. Or better, a mam object that features a cleanMyState function? No that would be difficult because we have a common default value that we want to access. a dict should suffice.
-        # clean up previous state if needed
-        if self.default_choice == self.msgIn_mam:
-            self.mam_counter = 0
-            print("the previous command was mam. it has been aborted and now cleaned up.")
-        self.default_choice = new_choice
-
     # intended to be put into the messageChoices dictionary
     # returns a function that    sets the new default choice and returns the reply string
     # if you give no new default, it will use the function that returns none. This causes the current implementation of the txtMsgSwitch function to default to some default message.
@@ -139,33 +125,9 @@ class ShiverBot(telepot.helper.ChatHandler):
         # in order for the clean to not be applied every time the dictionary is initialized, we define a new function within this function
         def result_f(received_msg_text):
             if reset_state:
-                self.cleanDefaultChoice(new_default)
+                self.default_choice = new_choice
             return reply(received_msg_text) if callable(reply) else reply # if reply is a function, return that functions return value, otherwise return the reply (string assumingly)
         return result_f
-
-    # Any functions starting with msgIn_ are called when the respective message was received
-    # The functions used in txtMsgSwitch are expected to return a reply string. If the reply string is the empty string, no reply will be sent.
-    def msgIn_testfunction(self, msgtext):
-        return "testfunction works! {0}".format(msgtext)
-
-    def msgIn_mam(self, message_text):
-        # TODO: start a dialog
-        # TODO: /mam while during mam should stop this mam and start a new one
-        # TODO: feature "/mam all parameters" as a single command?
-        mamList=["Please choose a title",
-                "{} Please enter some text".format("You set the title to {}. ".format(message_text)),
-                "Please choose an image"]
-
-        self.mam_counter += 1
-        # "please call this function again when the user replies with something that is not a command"
-        # if the next message would be out of bounds, reset the default choice and my state. otherwise make sure that we are called again.
-        if self.mam_counter < len(mamList):
-            self.default_choice = self.msgIn_mam
-        else:
-            self.cleanDefaultChoice() # do that at the end of this function, because it resets mams state also.
-            # This already does mam_counter = 0
-        
-        return mamList[self.mam_counter-1] # current message
 
 # setup a new logger
 def setup_logger(name, log_file, formatter, level=logging.INFO, printout=True):

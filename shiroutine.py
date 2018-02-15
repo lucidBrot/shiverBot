@@ -63,7 +63,7 @@ class MamShiroutine(Shiroutine):
             "You set the title to {0}. Please enter some text.".format(msgtext),
             "Please choose an image",
                 ]
-        # TODO: store inputs in self.state
+        # TODO: store inputs in self.state and reset them in cleanup
         # TODO: actually use them to call makeAboveMeme
         self.counter += 1
         i = self.counter - 1
