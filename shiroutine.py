@@ -22,7 +22,7 @@ class Shiroutine(object):
     # reset to a clean state on receival of a new command
     def cleanup(self):
         self.counter = 0
-        self.state = initialState
+        self.state = self.initialState
 
     # a function that every Shiroutine needs to provide
     # Called from the next_Default routine setting
@@ -68,13 +68,27 @@ class MamShiroutine(Shiroutine):
         super(MamShiroutine, self).run(msgtext)
         mamList = [
             "Please choose a title",
-            "You set the title to {0}. Please enter some text.".format(msgtext),
+            "Please enter some text.",
             "Please choose an image",
+            "Thanks!",
                 ]
         # TODO: store inputs in self.state and reset them in cleanup
         # TODO: actually use them to call makeAboveMeme
+        i = self.counter # will later return the string in mamList that is at that position
+        args = self.state # python treats these like pointers. it's an alias.
+
+        if  i == 0 :     # user sent '/mam'
+            pass
+        elif i == 1:     # user sent a title
+            args['--title'] = msgtext
+        elif i == 2:     # user sent some text
+            args['--text'] = msgtext # TODO: Does it work if the user sends no text?
+        elif i == 3:     # user sent an image... # TODO: call this shiroutine in that case also. What if it's a link?
+            mamList[i] = "Thx! You chose the title {0} and the text {1}. We don't support the image yet.".format(args['--title'], args['--text'])
+        else:
+            pass # TODO: send the user the resulting image
+
         self.counter += 1
-        i = self.counter - 1
         # if the next message would be out of bounds, reset the default choice and my state. Otherwise make sure that we are called again.
         if self.counter < len(mamList):
             self.setNextDefaultRoutine(self.run) # We want to be called again on the next message
