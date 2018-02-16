@@ -44,6 +44,7 @@ class ShiverBot(telepot.helper.ChatHandler):
 
     def handle(self, msg): # msg is an array that could be used e.g as msg['chat']['id']  to get the chat id
             global bot_g, logger_g
+            # TODO: clean up global usage (no need for bot_g here for example)
 
             content_type, chat_type, chat_id = telepot.glance(msg)
             logger_g.info('Received ({}, {}, {})'.format(content_type, chat_type, chat_id))
@@ -68,6 +69,7 @@ class ShiverBot(telepot.helper.ChatHandler):
     def handlePhoto(self, msg):# TODO
             global logger_g
             logger_g.info('Received a Photo. TODO: image handling')
+            # TODO: change self.default_choice so that it contains the shiroutine and will be called with run or runImg
 
     def handleDocument(self, msg):# TODO
             global logger_g
@@ -125,7 +127,7 @@ class ShiverBot(telepot.helper.ChatHandler):
         # in order for the clean to not be applied every time the dictionary is initialized, we define a new function within this function
         def result_f(received_msg_text):
             if reset_state:
-                self.default_choice = new_choice
+                self.default_choice = new_default
             return reply(received_msg_text) if callable(reply) else reply # if reply is a function, return that functions return value, otherwise return the reply (string assumingly)
         return result_f
 

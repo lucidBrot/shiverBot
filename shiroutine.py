@@ -26,6 +26,7 @@ class Shiroutine(object):
 
     # a function that every Shiroutine needs to provide
     # Called from the next_Default routine setting
+    # expects text input
     def run(self, msgtext):
         pass
 
@@ -44,6 +45,10 @@ class Shiroutine(object):
     def counter(self, value):
         self._counter = value
 
+    # called when an image is sent and this shiroutine is set as default
+    def runImg(self, img):
+        pass
+
 ''' Requirements for the function passed in as setNextDefault:
         must take a function as an argument
         must accept None as a valid input argument => set next routine to default'''
@@ -56,7 +61,18 @@ class MamShiroutine(Shiroutine):
     # dict self.initialState
     # func self.setNextDefaultRoutine
     # int  self.counter
-    
+
+    userSent = {
+                '/mam':0, 'title':1, 'text':2, 'image':3,
+            }
+
+    mamList = [
+        "Please choose a title",
+        "Please enter some text.",
+        "Please choose an image",
+        "Thanks!",
+            ]
+
     def __init__(self, setNextDefault, initialState={}):
         super(MamShiroutine, self).__init__(setNextDefault, initialState)
 
@@ -66,36 +82,47 @@ class MamShiroutine(Shiroutine):
 
     def run(self, msgtext):
         super(MamShiroutine, self).run(msgtext)
-        mamList = [
-            "Please choose a title",
-            "Please enter some text.",
-            "Please choose an image",
-            "Thanks!",
-                ]
         # TODO: store inputs in self.state and reset them in cleanup
         # TODO: actually use them to call makeAboveMeme
         i = self.counter # will later return the string in mamList that is at that position
         args = self.state # python treats these like pointers. it's an alias.
 
-        if  i == 0 :     # user sent '/mam'
+        if  i == MamShiroutine.userSent['/mam'] :     # user sent '/mam'
             pass
-        elif i == 1:     # user sent a title
+        elif i == MamShiroutine.userSent['title'] :     # user sent a title
             args['--title'] = msgtext
-        elif i == 2:     # user sent some text
+        elif i == MamShiroutine.userSent['text'] :     # user sent some text
             args['--text'] = msgtext # TODO: Does it work if the user sends no text?
-        elif i == 3:     # user sent an image... # TODO: call this shiroutine in that case also. What if it's a link?
-            mamList[i] = "Thx! You chose the title {0} and the text {1}. We don't support the image yet.".format(args['--title'], args['--text'])
+        elif i == MamShiroutine.userSent['image'] :
+            args['--image'] = msgtext
+            MamShiroutine.mamList[i] = "Thx! You chose the title {0} and the text {1}. We will load the image from {2}".format(args['--title'], args['--text'], args['--image'])
         else:
             pass # TODO: send the user the resulting image
 
         self.counter += 1
-        # if the next message would be out of bounds, reset the default choice and my state. Otherwise make sure that we are called again.
-        if self.counter < len(mamList):
+        # if the next message would be out of bounds, reset the default choice. Otherwise make sure that we are called again.
+        if self.counter < len(MamShiroutine.mamList):
             self.setNextDefaultRoutine(self.run) # We want to be called again on the next message
         else:
             self.setNextDefaultRoutine(None)
             self.cleanup() # reset counter and state
-        return mamList[i]
+        return MamShiroutine.mamList[i]
+
+    def runImg(self, img):
+        # if I expeced an image, I take it. otherwise, I ignore it.
+        if not self.counter == MamShiroutine.userSent['image']:
+            return "mAm was not expecting an image. I'll just ignore that you sent that."
+        else:
+            self.state['--image'] = img
+            self.counter += 1
+            # if the next message would be out of bounds, reset the default choice. otherwise make sure that we are called again.
+            if self.counter < len(MamShiroutine.mamList):
+               self.setNextDefaultRoutine(self.run)
+            else:
+               self.setNextDefaultRoutine(None)
+               self.cleanup()
+            return MamShiroutine.mamList[self.counter -1]
+            
 
     def callMam():
         # TODO: temporary output file
