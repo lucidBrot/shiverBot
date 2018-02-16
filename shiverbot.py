@@ -32,7 +32,8 @@ logger_g = None # defined in main / on module import
 class ShiverBot(telepot.helper.ChatHandler):
     def __init__(self, *args, **kwargs):
         super(ShiverBot, self).__init__(*args, **kwargs)
-        self.defSR = SR.DefaultShiroutine(self.setNextDefault, self.sender) # in order to only need one instance per chat. reuse this.
+        global bot_g
+        self.defSR = SR.DefaultShiroutine(self.setNextDefault, shiverbot=self, globalbot=bot_g ) # in order to only need one instance per chat. reuse this.
         self.default_choice = self.defSR.start # which function to proceed with if there was no new command entered
         # If a previous command is still running and you enter a new command, the new command will be executed (and will set default_choice either to itself again or to self.defSR.start (or .run) if it is done. This includes every command, because they might have aborted some previous command.
         # This is a function that returns the response to the next query
@@ -98,8 +99,8 @@ class ShiverBot(telepot.helper.ChatHandler):
                 '/test': self.choice('test'), # choice cleans the default routine and then calls the reply or a str
                 '/help': self.choice('This is a very helpful message indeed.'), # TODO: better help message
                 '/start': self.choice('Hey. I don\'t do stuff yet.'), # TODO: better start message
-                '/mam':SR.MamShiroutine(self.setNextDefault, self.sender).start, # not using choice by design: mam decides by itself when to clean the default value.
-                '/rout':SR.TestShiroutine(self.setNextDefault, self.sender).start,
+                '/mam':SR.MamShiroutine(self.setNextDefault, shiverbot=self, globalbot = bot_g).start, # not using choice by design: mam decides by itself when to clean the default value.
+                '/rout':SR.TestShiroutine(self.setNextDefault, shiverbot=self, globalbot = bot_g).start,
                 }
 
         # support message@botname

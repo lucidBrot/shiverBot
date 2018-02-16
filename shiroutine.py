@@ -8,6 +8,7 @@ except ImportError:
     import mAm
 
 import tempfile
+import os
 
 # A Shiroutine is a function with a state, which can be cleaned from any other function, resetting the Shiroutine to a default state.
 class Shiroutine(object):
@@ -16,12 +17,14 @@ class Shiroutine(object):
     # self.counter is the number of times this routine was called in succession (without restarting it by typing the same command again)
 
     # sender allows to send messages directly outside of the control flow
-    def __init__(self, setNextDefault, sender, initialState={}):
+    def __init__(self, setNextDefault, shiverbot, globalbot, initialState={}):
         self.state = initialState
         self.initialState = initialState
         self.setNextDefaultRoutine = setNextDefault
         self._counter = 0
-        self.sender = sender
+        self.sender = shiverbot.sender
+        self.shiverbot = shiverbot
+        self.globalbot = globalbot
 
     # reset to a clean state on receival of a new command
     def cleanup(self):
@@ -38,7 +41,11 @@ class Shiroutine(object):
     # Called from the command-mapping dictionary
     def start(self, msgtext):
         self.cleanup()
+        self.onStart(msgtext)
         return self.run(msgtext)
+
+    def onStart(self, msgtext):
+        pass
 
     # playing around with the property decorator
     @property
@@ -79,8 +86,18 @@ class MamShiroutine(Shiroutine):
             ]
 
     def cleanup(self):
+        try:
+            if self.state.get('--image', None) is not None and self.imageWasFile:
+                os.remove(self.state['--image'])
+        except OSError as e:
+            pass # file was already correctly removed by finalize()
+
+        self.imageWasFile = False
         # super resets the counter
         super(MamShiroutine, self)
+
+    def onStart(self, msgtext):
+        self.imageWasFile = False 
 
     def run(self, msgtext):
         super(MamShiroutine, self).run(msgtext)
@@ -97,6 +114,7 @@ class MamShiroutine(Shiroutine):
             args['--text'] = msgtext # TODO: Does it work if the user sends no text?
         elif i == MamShiroutine.userSent['image'] :
             args['--image'] = msgtext
+            self.imageWasFile = False
             MamShiroutine.mamList[i] = "Thx! You chose the title {0} and the text {1}. We will load the image from {2}".format(args['--title'], args['--text'], args['--image'])
         else:
             pass # TODO: send the user the resulting image
@@ -115,30 +133,43 @@ class MamShiroutine(Shiroutine):
         if not self.counter == MamShiroutine.userSent['image']:
             return "mAm was not expecting an image. I'll just ignore that you sent that."
         else:
-            self.state['--image'] = img
+            (fd, filename) = self.downloadImageIntoTempfile(img)
+            self.state['--image'] = filename
+            self.imageWasFile = True
             self.counter += 1
             # if the next message would be out of bounds, reset the default choice. otherwise make sure that we are called again.
             if self.counter < len(MamShiroutine.mamList):
                self.setNextDefaultRoutine(self.run)
             else:
+               self.finalize()
                self.setNextDefaultRoutine(None)
                self.cleanup()
             return MamShiroutine.mamList[self.counter -1]
-            
 
-    def callMam(title, text, image): # TODO: save image, call callMam, reply with image
+    def downloadImageIntoTempfile(self, imgMessage):
+        # make tempfile, download photo, return tempfile so it can be deleted later
+        (fd, filename) = tempfile.mkstemp()
+        self.globalbot.download_file(imgMessage['photo'][-1]['file_id'], filename)
+        return (fd, filename)
+
+    def finalize(self):
+        self.callMam() # generate the meme and send it to the user
+        os.remove(self.state['--image']) # remove the temporary image
+        
+
+    def callMam(self): # TODO: save image, call callMam, reply with image
         # reserve temporary file
         (fd, filename) = tempfile.mkstemp(suffix='.png')
         arguments = {
             '--comments': None,
             '--help': False,
-            '--image': image,
+            '--image': self.state.get('--image', None),
             '--link': None,
             '--out': filename,
             '--points': None,
             '--tag': [],
-            '--text': text,
-            '--title': title,
+            '--text': self.state.get('--text', None),
+            '--title': self.state.get('--title', None),
             '--version': False,
             '-C': None,
             '-X': False
