@@ -115,7 +115,8 @@ class MamShiroutine(Shiroutine):
         elif i == MamShiroutine.userSent['image'] :
             args['--image'] = msgtext
             self.imageWasFile = False
-            MamShiroutine.mamList[i] = "Thx! You chose the title {0} and the text {1}. We will load the image from {2}".format(args['--title'], args['--text'], args['--image'])
+            # Debug:
+            # MamShiroutine.mamList[i] = "Thx! You chose the title {0} and the text {1}. We will load the image from {2}".format(args['--title'], args['--text'], args['--image'])
             self.finalize()
         else:
             pass 
@@ -160,6 +161,9 @@ class MamShiroutine(Shiroutine):
         
 
     def callMam(self):
+        # inform the user that this might take some time
+        self.sender.sendMessage("This might take up to a few minutes. (If it takes longer, something might have crashed)")
+
         # reserve temporary file
         (fd, filename) = tempfile.mkstemp(suffix='.png')
         arguments = {
