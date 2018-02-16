@@ -148,4 +148,17 @@ class MamShiroutine(Shiroutine):
 class TestShiroutine(Shiroutine):
     def run(self, msgtext):
         super(TestShiroutine, self).run(msgtext)
+        # DEBUG: setting next routine to be the defaultShiroutine
+        defaultSR = DefaultShiroutine(setNextDefault = self.setNextDefaultRoutine)
+        self.setNextDefaultRoutine(defaultSR.run)
         return "testroutine works! {0}".format(msgtext)
+
+class DefaultShiroutine(Shiroutine):
+    def run(self, msgtext):
+        super(DefaultShiroutine, self).run(msgtext)
+        return "I didn't study for this 0.o"
+
+    def runImg(self, msg):
+        super(DefaultShiroutine, self).runImg(msg)
+        return "I didn't expect pics today ;)"
+

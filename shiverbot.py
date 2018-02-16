@@ -68,8 +68,11 @@ class ShiverBot(telepot.helper.ChatHandler):
 
     def handlePhoto(self, msg):# TODO
             global logger_g
-            logger_g.info('Received a Photo. TODO: image handling')
-            # TODO: change self.default_choice so that it contains the shiroutine and will be called with run or runImg
+            content_type, chat_type, chat_id = telepot.glance(msg)
+            logger_g.info('Received a Photo from chat_id {}'.format(chat_id))
+            logger_g.debug('that photo is {}.'.format(msg))
+            # hackish, but less effort than to replace default_choice with a shiroutine instead of a function
+            self.default_choice.im_self.runImg(msg)
 
     def handleDocument(self, msg):# TODO
             global logger_g
@@ -85,7 +88,7 @@ class ShiverBot(telepot.helper.ChatHandler):
                 '/help': self.choice('This is a very helpful message indeed.'), # TODO: better help message
                 '/start': self.choice('Hey. I don\'t do stuff yet.'), # TODO: better start message
                 '/mam':SR.MamShiroutine(self.setNextDefault).start, # not using choice by design: mam decides by itself when to clean the default value.
-                '/rout':SR.TestShiroutine(setNextDefault=lambda x:None).start,
+                '/rout':SR.TestShiroutine(self.setNextDefault).start,
                 }
 
         # support message@botname
