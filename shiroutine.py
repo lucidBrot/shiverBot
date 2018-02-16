@@ -7,17 +7,21 @@ try:
 except ImportError:
     import mAm
 
+import tempfile
+
 # A Shiroutine is a function with a state, which can be cleaned from any other function, resetting the Shiroutine to a default state.
 class Shiroutine(object):
     # self.state is a dictionary with whatever state the Shiroutine needs
     # self.setNextDefaultRoutine is a function to set the global variable for the next Shiroutine to execute
     # self.counter is the number of times this routine was called in succession (without restarting it by typing the same command again)
 
-    def __init__(self, setNextDefault, initialState={}):
+    # sender allows to send messages directly outside of the control flow
+    def __init__(self, setNextDefault, sender, initialState={}):
         self.state = initialState
         self.initialState = initialState
         self.setNextDefaultRoutine = setNextDefault
         self._counter = 0
+        self.sender = sender
 
     # reset to a clean state on receival of a new command
     def cleanup(self):
@@ -61,6 +65,7 @@ class MamShiroutine(Shiroutine):
     # dict self.initialState
     # func self.setNextDefaultRoutine
     # int  self.counter
+    # ???  self.sender  offers .sendMessage and similar
 
     userSent = {
                 '/mam':0, 'title':1, 'text':2, 'image':3,
@@ -72,9 +77,6 @@ class MamShiroutine(Shiroutine):
         "Please choose an image",
         "Thanks!",
             ]
-
-    def __init__(self, setNextDefault, initialState={}):
-        super(MamShiroutine, self).__init__(setNextDefault, initialState)
 
     def cleanup(self):
         # super resets the counter
@@ -124,24 +126,31 @@ class MamShiroutine(Shiroutine):
             return MamShiroutine.mamList[self.counter -1]
             
 
-    def callMam():
-        # TODO: temporary output file
-        # TODO: actually use this function, pass it some params
+    def callMam(title, text, image): # TODO: save image, call callMam, reply with image
+        # reserve temporary file
+        (fd, filename) = tempfile.mkstemp(suffix='.png')
         arguments = {
             '--comments': None,
             '--help': False,
-            '--image': None,
+            '--image': image,
             '--link': None,
-            '--out': './aboveMeme.png',
+            '--out': filename,
             '--points': None,
             '--tag': [],
-            '--text': None,
-            '--title': None,
+            '--text': text,
+            '--title': title,
             '--version': False,
             '-C': None,
             '-X': False
         }
-        mAm.main(arguments)
+
+        try:
+            mAm.main(arguments)
+            tfile = open(filename, 'rb')
+            self.sender.sendPhoto(tfile)
+        finally: # delete the tempfile again
+            tfile.close()
+            os.remove(filename)
 
 
 # Testroutine

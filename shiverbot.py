@@ -32,7 +32,7 @@ logger_g = None # defined in main / on module import
 class ShiverBot(telepot.helper.ChatHandler):
     def __init__(self, *args, **kwargs):
         super(ShiverBot, self).__init__(*args, **kwargs)
-        self.defSR = SR.DefaultShiroutine(self.setNextDefault) # in order to only need one instance per chat. reuse this.
+        self.defSR = SR.DefaultShiroutine(self.setNextDefault, self.sender) # in order to only need one instance per chat. reuse this.
         self.default_choice = self.defSR.start # which function to proceed with if there was no new command entered
         # If a previous command is still running and you enter a new command, the new command will be executed (and will set default_choice either to itself again or to self.defSR.start (or .run) if it is done. This includes every command, because they might have aborted some previous command.
         # This is a function that returns the response to the next query
@@ -47,6 +47,7 @@ class ShiverBot(telepot.helper.ChatHandler):
     def handle(self, msg): # msg is an array that could be used e.g as msg['chat']['id']  to get the chat id
             global bot_g, logger_g
             # TODO: clean up global usage (no need for bot_g here for example)
+            # TODO: handle all the other options http://telepot.readthedocs.io/en/latest/reference.html#telepot.Bot.sendPhoto
 
             content_type, chat_type, chat_id = telepot.glance(msg)
             logger_g.info('Received ({}, {}, {})'.format(content_type, chat_type, chat_id))
@@ -97,8 +98,8 @@ class ShiverBot(telepot.helper.ChatHandler):
                 '/test': self.choice('test'), # choice cleans the default routine and then calls the reply or a str
                 '/help': self.choice('This is a very helpful message indeed.'), # TODO: better help message
                 '/start': self.choice('Hey. I don\'t do stuff yet.'), # TODO: better start message
-                '/mam':SR.MamShiroutine(self.setNextDefault).start, # not using choice by design: mam decides by itself when to clean the default value.
-                '/rout':SR.TestShiroutine(self.setNextDefault).start,
+                '/mam':SR.MamShiroutine(self.setNextDefault, self.sender).start, # not using choice by design: mam decides by itself when to clean the default value.
+                '/rout':SR.TestShiroutine(self.setNextDefault, self.sender).start,
                 }
 
         # support message@botname
