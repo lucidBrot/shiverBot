@@ -47,7 +47,7 @@ class Shiroutine(object):
 
     # called when an image is sent and this shiroutine is set as default
     def runImg(self, img):
-        pass
+        return None
 
 ''' Requirements for the function passed in as setNextDefault:
         must take a function as an argument
@@ -149,6 +149,7 @@ class TestShiroutine(Shiroutine):
     def run(self, msgtext):
         super(TestShiroutine, self).run(msgtext)
         # DEBUG: setting next routine to be the defaultShiroutine
+        # TODO: remove that again
         defaultSR = DefaultShiroutine(setNextDefault = self.setNextDefaultRoutine)
         self.setNextDefaultRoutine(defaultSR.run)
         return "testroutine works! {0}".format(msgtext)

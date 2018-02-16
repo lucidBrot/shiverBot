@@ -32,9 +32,11 @@ logger_g = None # defined in main / on module import
 class ShiverBot(telepot.helper.ChatHandler):
     def __init__(self, *args, **kwargs):
         super(ShiverBot, self).__init__(*args, **kwargs)
-        self.default_choice = self.choice(reply=None, reset_state=False, new_default=lambda msgtext:None) # which function to proceed with if there was no new command entered
-        # If a previous command is still running and you enter a new command, the new command will be executed (and will set default_choice either to itself again or to None if it is done. This includes every command, because they might have aborted some previous command.
+        self.defSR = SR.DefaultShiroutine(self.setNextDefault) # in order to only need one instance per chat. reuse this.
+        self.default_choice = self.defSR.start # which function to proceed with if there was no new command entered
+        # If a previous command is still running and you enter a new command, the new command will be executed (and will set default_choice either to itself again or to self.defSR.start (or .run) if it is done. This includes every command, because they might have aborted some previous command.
         # This is a function that returns the response to the next query
+        # Tricky: it must be the method of a Shiroutine, because for images, we use its instance. Sorry for ugly.
 
         # prepare field for later use
         self.name = None
@@ -67,12 +69,20 @@ class ShiverBot(telepot.helper.ChatHandler):
             self.txtMsgSwitch(msgtext, chat_id) # find out what to do with the text message
 
     def handlePhoto(self, msg):# TODO
-            global logger_g
-            content_type, chat_type, chat_id = telepot.glance(msg)
-            logger_g.info('Received a Photo from chat_id {}'.format(chat_id))
-            logger_g.debug('that photo is {}.'.format(msg))
-            # hackish, but less effort than to replace default_choice with a shiroutine instead of a function
-            self.default_choice.im_self.runImg(msg)
+        global logger_g
+        content_type, chat_type, chat_id = telepot.glance(msg)
+        logger_g.info('Received a Photo from chat_id {}'.format(chat_id))
+        logger_g.debug('that photo is {}.'.format(msg))
+        # hackish, but less effort than to replace default_choice with a shiroutine instead of a function
+        result = self.default_choice.im_self.runImg(msg)
+        logger_g.info("To {1}  sending <{0}>".format(result, chat_id))
+
+        if result == None or result == "":
+            pass
+        else: # send message as specified in dictionary
+            self.sender.sendMessage(result) # automatically selects chat_id
+
+        return result 
 
     def handleDocument(self, msg):# TODO
             global logger_g
@@ -110,24 +120,26 @@ class ShiverBot(telepot.helper.ChatHandler):
         result = messageChoices.get(msgCommand.lower(), self.choice(self.default_choice, reset_state=False))(msgContent)
         logger_g.info("To {1}  sending <{0}>".format(result, chat_id))
 
-        if result == None:
-                self.sender.sendMessage('defaulting to default message')
-        elif result == "":
+        if result == None or result == "":
             pass
         else: # send message as specified in dictionary
                 self.sender.sendMessage(result) # automatically selects chat_id
 
-        return result
+        return result # Though I don't think this will be used anywhere
 
+    # set the next default run function. If it is None, use the DefaultShiroutine.start instead.
     def setNextDefault(self, next_default_f):
-        self.default_choice = next_default_f
+        self.default_choice = next_default_f if next_default_f is not None else self.defSR.start
 
     # intended to be put into the messageChoices dictionary
     # returns a function that    sets the new default choice and returns the reply string
     # if you give no new default, it will use the function that returns none. This causes the current implementation of the txtMsgSwitch function to default to some default message.
     # set reset_state to false if you want to use this only as a wrapper function without a side-effect of cleaning the state variables
-    def choice(self, reply, new_default=lambda msgtext:None, reset_state=True):
+    def choice(self, reply, new_default=None, reset_state=True):
         # in order for the clean to not be applied every time the dictionary is initialized, we define a new function within this function
+        if new_default is None: # if the new_default is none, the output should be default
+            new_default = self.defSR.start
+
         def result_f(received_msg_text):
             if reset_state:
                 self.default_choice = new_default
