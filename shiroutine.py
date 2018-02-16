@@ -40,8 +40,8 @@ class Shiroutine(object):
     # start the shiroutine anew because a new command for it was received.
     # Called from the command-mapping dictionary
     def start(self, msgtext):
-        self.cleanup()
         self.onStart(msgtext)
+        self.cleanup()
         return self.run(msgtext)
 
     def onStart(self, msgtext):
@@ -82,7 +82,7 @@ class MamShiroutine(Shiroutine):
         "Please choose a title",
         "Please enter some text.",
         "Please choose an image",
-        "Thanks!",
+        "", # no thanks message at the end
             ]
 
     def cleanup(self):
@@ -116,8 +116,9 @@ class MamShiroutine(Shiroutine):
             args['--image'] = msgtext
             self.imageWasFile = False
             MamShiroutine.mamList[i] = "Thx! You chose the title {0} and the text {1}. We will load the image from {2}".format(args['--title'], args['--text'], args['--image'])
+            self.finalize()
         else:
-            pass # TODO: send the user the resulting image
+            pass 
 
         self.counter += 1
         # if the next message would be out of bounds, reset the default choice. Otherwise make sure that we are called again.
@@ -154,10 +155,11 @@ class MamShiroutine(Shiroutine):
 
     def finalize(self):
         self.callMam() # generate the meme and send it to the user
-        os.remove(self.state['--image']) # remove the temporary image
+        if self.state.get('--image', None) is not None and self.imageWasFile:
+            os.remove(self.state['--image']) # remove the temporary image
         
 
-    def callMam(self): # TODO: save image, call callMam, reply with image
+    def callMam(self):
         # reserve temporary file
         (fd, filename) = tempfile.mkstemp(suffix='.png')
         arguments = {
