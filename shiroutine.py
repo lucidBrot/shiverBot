@@ -166,7 +166,6 @@ class MamShiroutine(Shiroutine):
             '--comments': None,
             '--help': False,
             '--image': self.state.get('--image', None),
-            '--link': None,
             '--out': filename,
             '--points': None,
             '--tag': [],
@@ -180,9 +179,11 @@ class MamShiroutine(Shiroutine):
         try:
             mAm.main(arguments)
             tfile = open(filename, 'rb')
-            self.sender.sendPhoto(tfile)
+            try:
+                self.sender.sendPhoto(tfile)
+            finally:
+                tfile.close()
         finally: # delete the tempfile again
-            tfile.close()
             os.remove(filename)
 
 
