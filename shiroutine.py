@@ -10,6 +10,7 @@ except ImportError:
 import tempfile
 import os
 import subprocess
+import re, sys
 
 # A Shiroutine is a function with a state, which can be cleaned from any other function, resetting the Shiroutine to a default state.
 class Shiroutine(object):
@@ -216,10 +217,25 @@ class DefaultShiroutine(Shiroutine):
         return "I didn't expect pics today ;)"
 
 class QueryShiroutine(Shiroutine):
+    querypath = r'/mnt/PIHDD/BreachCompilation/query.sh'
     def run(self, msgtext):
         super(QueryShiroutine, self).run(msgtext)
-        if os.path.isfile( r'/mnt/PIHDD/BreachCompilation/query.sh' ):
-            return '---{}---\n'.format(msgtext)+subprocess.check_output(['/mnt/PIHDD/BreachCompilation/query.sh', msgtext], stderr=subprocess.STDOUT)
+        
+        # egrep the results... maybe multiple times
+        if '|' in msgtext:
+            splitted = msgtext.split('|')
+            # only query the first enty
+            if os.path.isfile( QueryShiroutine.querypath ):
+                res = subprocess.check_output([QueryShiroutine.querypath, splitted[0]], stderr=subprocess.STDOUT)
+                reslist = res.split('\n')
+                r = re.compile(splitted[1])
+                result = filter(r.search, reslist)
+                outstr = '--- '+msgtext+' ---\n' + '\n'.join(result)
+                return outstr
+                
         else:
-            return "Sorry, I don't have the database to hand at the moment."
+            if os.path.isfile(QueryShiroutine.querypath):
+                return '---{}---\n'.format(msgtext)+subprocess.check_output([QueryShiroutine.querypath, msgtext], stderr=subprocess.STDOUT)
+            else:
+                return "Sorry, I don't have the database to hand at the moment."
 
