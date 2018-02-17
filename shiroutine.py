@@ -221,21 +221,24 @@ class QueryShiroutine(Shiroutine):
     def run(self, msgtext):
         super(QueryShiroutine, self).run(msgtext)
         
-        # egrep the results... maybe multiple times
-        if '|' in msgtext:
-            splitted = msgtext.split('|')
-            # only query the first enty
-            if os.path.isfile( QueryShiroutine.querypath ):
-                res = subprocess.check_output([QueryShiroutine.querypath, splitted[0]], stderr=subprocess.STDOUT)
-                reslist = res.split('\n')
-                r = re.compile(splitted[1])
-                result = filter(r.search, reslist)
-                outstr = '--- '+msgtext+' ---\n' + '\n'.join(result)
-                return outstr
-                
-        else:
-            if os.path.isfile(QueryShiroutine.querypath):
-                return '---{}---\n'.format(msgtext)+subprocess.check_output([QueryShiroutine.querypath, msgtext], stderr=subprocess.STDOUT)
+        try:
+            # egrep the results... maybe multiple times
+            if '|' in msgtext:
+                splitted = msgtext.split('|')
+                # only query the first enty
+                if os.path.isfile( QueryShiroutine.querypath ):
+                    res = subprocess.check_output([QueryShiroutine.querypath, splitted[0]], stderr=subprocess.STDOUT)
+                    reslist = res.split('\n')
+                    r = re.compile(splitted[1])
+                    result = filter(r.search, reslist)
+                    outstr = '--- '+msgtext+' ---\n' + '\n'.join(result)
+                    return outstr
+                    
             else:
-                return "Sorry, I don't have the database to hand at the moment."
+                if os.path.isfile(QueryShiroutine.querypath):
+                    return '---{}---\n'.format(msgtext)+subprocess.check_output([QueryShiroutine.querypath, msgtext], stderr=subprocess.STDOUT)
+                else:
+                    return "Sorry, I don't have the database to hand at the moment."
+        except subprocess.CalledProcessError as e:
+            return "Sorry, the database query returned an error.\n{0}\n{1}\n{2}".format(e.cmd, e.returncode, e.output)
 
