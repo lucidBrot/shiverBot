@@ -11,7 +11,7 @@ This started out as a means to get back into python syntax and learning to work 
 
 https://t.me/shi_ver_bot
 
-Requirements:
+Requirements to build it yourself, in case you want to use my structure as a template for your own bot:
 ```
 pip install telepot
 pip install pyyaml
