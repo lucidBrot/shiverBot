@@ -101,7 +101,7 @@ class ShiverBot(telepot.helper.ChatHandler):
                    '/mam - Interactively create a captioned image. Send a dot if you want to leave a field empty, send a `\.` if you really want only a dot as text.\n'
                     'use <br>, \\n or a normal newline for a new line. Any other html will be left as you enter it.\n'
                     '/help - Display some helpful message.\n'
-                    '/q some@email.com - search the BreachCompilation (compiled in 2017)'
+                    '/q some@email.com - search the BreachCompilation (compiled in 2017). You can use `/q some@email.com|searchterm` to perform a regexp search on the results'
                     ),
                 '/start': self.choice('Hey. I don\'t do much stuff yet. But feel free to snoop around. /help might help you.'), # TODO: better start message
                 '/mam':SR.MamShiroutine(self.setNextDefault, shiverbot=self, globalbot = bot_g).start, # not using choice by design: mam decides by itself when to clean the default value.
