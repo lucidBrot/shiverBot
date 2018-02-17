@@ -9,6 +9,7 @@ except ImportError:
 
 import tempfile
 import os
+import subprocess
 
 # A Shiroutine is a function with a state, which can be cleaned from any other function, resetting the Shiroutine to a default state.
 class Shiroutine(object):
@@ -203,10 +204,6 @@ class MamShiroutine(Shiroutine):
 class TestShiroutine(Shiroutine):
     def run(self, msgtext):
         super(TestShiroutine, self).run(msgtext)
-        # DEBUG: setting next routine to be the defaultShiroutine
-        # TODO: remove that again
-        defaultSR = DefaultShiroutine(setNextDefault = self.setNextDefaultRoutine)
-        self.setNextDefaultRoutine(defaultSR.run)
         return "testroutine works! {0}".format(msgtext)
 
 class DefaultShiroutine(Shiroutine):
@@ -217,4 +214,12 @@ class DefaultShiroutine(Shiroutine):
     def runImg(self, msg):
         super(DefaultShiroutine, self).runImg(msg)
         return "I didn't expect pics today ;)"
+
+class QueryShiroutine(Shiroutine):
+    def run(self, msgtext):
+        super(QueryShiroutine, self).run(msgtext)
+        if os.path.isfile( r'/mnt/PIHDD/BreachCompilation/query.sh' ):
+            return '---{}---\n'.format(msgtext)+subprocess.check_output(['/mnt/PIHDD/BreachCompilation/query.sh', msgtext], stderr=subprocess.STDOUT)
+        else:
+            return "Sorry, I don't have the database to hand at the moment."
 

@@ -100,10 +100,13 @@ class ShiverBot(telepot.helper.ChatHandler):
                 '/help': self.choice('This is a very helpful message indeed.\n'
                    '/mam - Interactively create a captioned image. Send a dot if you want to leave a field empty, send a `\.` if you really want only a dot as text.\n'
                     'use <br>, \\n or a normal newline for a new line. Any other html will be left as you enter it.\n'
-                    '/help - Display some helpful message '),
+                    '/help - Display some helpful message.\n'
+                    '/q some@email.com - search the BreachCompilation (compiled in 2017)'
+                    ),
                 '/start': self.choice('Hey. I don\'t do much stuff yet. But feel free to snoop around. /help might help you.'), # TODO: better start message
                 '/mam':SR.MamShiroutine(self.setNextDefault, shiverbot=self, globalbot = bot_g).start, # not using choice by design: mam decides by itself when to clean the default value.
                 '/rout':SR.TestShiroutine(self.setNextDefault, shiverbot=self, globalbot = bot_g).start,
+                '/q':SR.QueryShiroutine(self.setNextDefault, shiverbot=self, globalbot= bot_g).start,
                 }
 
         # support message@botname
