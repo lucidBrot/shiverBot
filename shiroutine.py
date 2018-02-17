@@ -109,11 +109,11 @@ class MamShiroutine(Shiroutine):
         if  i == MamShiroutine.userSent['/mam'] :     # user sent '/mam'
             pass
         elif i == MamShiroutine.userSent['title'] :     # user sent a title
-            args['--title'] = msgtext
+            args['--title'] = self.marshallEmpty(msgtext)
         elif i == MamShiroutine.userSent['text'] :     # user sent some text
-            args['--text'] = msgtext # TODO: Does it work if the user sends no text?
+            args['--text'] = self.marshallEmpty(msgtext)
         elif i == MamShiroutine.userSent['image'] :
-            args['--image'] = msgtext
+            args['--image'] = self.marshallEmpty(msgtext)
             self.imageWasFile = False
             # Debug:
             # MamShiroutine.mamList[i] = "Thx! You chose the title {0} and the text {1}. We will load the image from {2}".format(args['--title'], args['--text'], args['--image'])
@@ -136,7 +136,7 @@ class MamShiroutine(Shiroutine):
             return "mAm was not expecting an image. I'll just ignore that you sent that."
         else:
             (fd, filename) = self.downloadImageIntoTempfile(img)
-            self.state['--image'] = filename
+            self.state['--image'] = self.marshallEmpty(filename)
             self.imageWasFile = True
             self.counter += 1
             # if the next message would be out of bounds, reset the default choice. otherwise make sure that we are called again.
@@ -190,6 +190,14 @@ class MamShiroutine(Shiroutine):
         finally: # delete the tempfile again
             os.remove(filename)
 
+    # return same string, but if it is only a dot, return None (because the telegram user cannot send empty string). If it is "\.", remove the backslash that was escaping the dot
+    def marshallEmpty(self, stri):
+        if stri == ".":
+            return None
+        if stri =="\.":
+            return "."
+        else:
+            return stri
 
 # Testroutine
 class TestShiroutine(Shiroutine):
