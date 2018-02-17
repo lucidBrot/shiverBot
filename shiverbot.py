@@ -109,15 +109,14 @@ class ShiverBot(telepot.helper.ChatHandler):
                 '/q':SR.QueryShiroutine(self.setNextDefault, shiverbot=self, globalbot= bot_g).start,
                 }
 
-        # support message@botname
-        if msgtext.endswith("@{}".format(bot_g.name)):
-            msgtext = msgtext[:-len("@{}".format(bot_g.name))]
-            #print('got rid of ending. now it\'s only {}'.format(msgtext)) 
-
+        # support message@botname, split command and content
         if msgtext.count(' ') > 0:
             [msgCommand, msgContent] = msgtext.split(' ',1) # split on first space
             if msgCommand not in messageChoices:
-                msgContent = "{0} {1}".format(msgCommand, msgContent) # re-add space and make the whole thing content if it's not in the dict
+                if msgCommand[:-len("@{}".format(bot_g.name))] in messageChoices:
+                    msgCommand = msgCommand[:-len("@{}".format(bot_g.name))]
+                else:
+                    msgContent = "{0} {1}".format(msgCommand, msgContent) # re-add space and make the whole thing content if it's not in the dict
                 # leave msgCommand the same so that the next query will also decide that it is not in the dictionary and then forward the whole string in msgContent
         else:
             msgCommand = msgtext

@@ -222,6 +222,12 @@ class QueryShiroutine(Shiroutine):
         super(QueryShiroutine, self).run(msgtext)
         
         try:
+            if msgtext is None:
+                response = "Please provide an e-mail address"
+                self.setNextDefaultRoutine(self.run)
+                return response
+            else:
+                self.setNextDefaultRoutine(None)
             # egrep the results... maybe multiple times
             if '|' in msgtext:
                 splitted = msgtext.split('|')
@@ -240,5 +246,5 @@ class QueryShiroutine(Shiroutine):
                 else:
                     return "Sorry, I don't have the database to hand at the moment."
         except subprocess.CalledProcessError as e:
-            return "Sorry, the database query returned an error.\n{0}\n{1}\n{2}".format(e.cmd, e.returncode, e.output)
+            return "Two options: Either the entered address was not found, or the database query returned an error.\n{0}\n{1}\n{2}".format(e.cmd, e.returncode, e.output)
 
