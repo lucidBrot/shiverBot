@@ -69,6 +69,10 @@ class ShiverBot(telepot.helper.ChatHandler):
             content_type, chat_type, chat_id = telepot.glance(msg)
             logger_g.info('Got message <{}> from chat_id {}'.format(msgtext, chat_id))
             self.txtMsgSwitch(msgtext, chat_id) # find out what to do with the text message
+            # After answering, log that this user started chatting
+            # this should make it easier to later count the number of users (just sort the file and remove duplicates)
+            with open("users_shiverbot.log", "a") as usfile:
+                usfile.write(chat_id)
 
     def handlePhoto(self, msg):# TODO
         global logger_g
@@ -183,7 +187,7 @@ def main(): # starts everything
 	formatter_g = logging.Formatter(log_format) # '%(asctime)s %(levelname)s %(message)s' or similar
 	# set logger to file from config
 	LOGFILE = config['logger']['log_file']
-	logger_g = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=formatter_g, printout=True)
+	logger_g = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=formatter_g, printout=False)
 	print 'set logfile to {}'.format(LOGFILE)
 
 	# load token from config file and set global bot_g variable
