@@ -20,6 +20,7 @@ bot_g = None
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SECRET_CONFIG_FILE = os.path.join(SCRIPT_DIR, './secret_config.yml')
 GENERAL_CONFIG_FILE = os.path.join(SCRIPT_DIR, './config.yml')
+USER_LOG_FILE = 'users_shiverbot.log'
 
 # -------------------------------------------------------
 # These settings are ignored unless main() is not called
@@ -71,8 +72,8 @@ class ShiverBot(telepot.helper.ChatHandler):
             self.txtMsgSwitch(msgtext, chat_id) # find out what to do with the text message
             # After answering, log that this user started chatting
             # this should make it easier to later count the number of users (just sort the file and remove duplicates)
-            with open("users_shiverbot.log", "a") as usfile:
-                usfile.write(chat_id)
+            with open(USER_LOG_FILE, "a") as usfile:
+                usfile.write('{}\n'.format(str(chat_id)))
 
     def handlePhoto(self, msg):# TODO
         global logger_g
