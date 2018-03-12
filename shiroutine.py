@@ -246,5 +246,6 @@ class QueryShiroutine(Shiroutine):
                 else:
                     return "Sorry, I don't have the database to hand at the moment."
         except subprocess.CalledProcessError as e:
-            return "Two options: Either the entered address was not found, or the database query returned an error.\n{0}\n{1}\n{2}".format(e.cmd, e.returncode, e.output)
+            #return "Two options: Either the entered address was not found, or the database query returned an error.\n{0}\n{1}\n{2}".format(e.cmd, e.returncode, e.output)
+            return "No results found. That is usually because there are no leaked entries in the database. Be aware that your password could still be _somewhere_ out there - just not here."
 
