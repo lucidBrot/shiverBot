@@ -228,6 +228,7 @@ class QueryShiroutine(Shiroutine):
                 return response
             else:
                 self.setNextDefaultRoutine(None)
+            returnMsg = ""
             # egrep the results... maybe multiple times
             if '|' in msgtext:
                 splitted = msgtext.split('|')
@@ -238,13 +239,19 @@ class QueryShiroutine(Shiroutine):
                     r = re.compile(splitted[1])
                     result = filter(r.search, reslist)
                     outstr = '--- '+msgtext+' ---\n' + '\n'.join(result)
-                    return outstr
+                    returnMsg = outstr
                     
             else:
                 if os.path.isfile(QueryShiroutine.querypath):
-                    return '---{}---\n'.format(msgtext)+subprocess.check_output([QueryShiroutine.querypath, msgtext], stderr=subprocess.STDOUT)
+                    returnMsg = '---{}---\n'.format(msgtext)+subprocess.check_output([QueryShiroutine.querypath, msgtext], stderr=subprocess.STDOUT)
                 else:
                     return "Sorry, I don't have the database to hand at the moment."
+
+            # filter out messages that are too long
+            if(returnMsg.count('\n')>50):
+                return "Output has over 50 lines. I cannot send you that."
+            else:
+                return returnMsg
         except subprocess.CalledProcessError as e:
             #return "Two options: Either the entered address was not found, or the database query returned an error.\n{0}\n{1}\n{2}".format(e.cmd, e.returncode, e.output)
             return "No results found. That is usually because there are no leaked entries in the database. Be aware that your password could still be _somewhere_ out there - just not here."
