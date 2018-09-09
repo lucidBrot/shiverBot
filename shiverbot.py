@@ -125,7 +125,10 @@ class ShiverBot(telepot.helper.ChatHandler):
                 # leave msgCommand the same so that the next query will also decide that it is not in the dictionary and then forward the whole string in msgContent
         else:
             msgCommand = msgtext
-            msgContent = None if msgtext in messageChoices else msgtext # set content to the whole message text if there's no mapping for it, because then we direct it on as a string in the next query (that will fail as well, because msgCommand is the same as msgtext.
+            # support message@botname
+            if msgCommand[:-len("@{}".format(bot_g.name))] in messageChoices:
+                msgCommand = msgCommand[:-len("@{}".format(bot_g.name))]
+            msgContent = None if msgtext in messageChoices else msgCommand # set content to the whole message text if there's no mapping for it, because then we direct it on as a string in the next query (that will fail as well, because msgCommand is the same as msgtext.
         
         # default_choice is stored in self. Might be set by functions that want to form a conversation thread
         # If the new message is not a command, do not wipe the current state.
