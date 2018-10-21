@@ -112,6 +112,7 @@ class ShiverBot(telepot.helper.ChatHandler):
                 '/mam':SR.MamShiroutine(self.setNextDefault, shiverbot=self, globalbot = bot_g).start, # not using choice by design: mam decides by itself when to clean the default value.
                 '/rout':SR.TestShiroutine(self.setNextDefault, shiverbot=self, globalbot = bot_g).start,
                 '/q':SR.QueryShiroutine(self.setNextDefault, shiverbot=self, globalbot= bot_g).start,
+                '/u':SR.UsercountShiroutine(self.setNextDefault, shiverbot=self, globalbot = bot_g).start,
                 }
 
         # support message@botname, split command and content
