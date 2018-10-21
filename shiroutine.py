@@ -9,7 +9,7 @@ except ImportError:
 
 import tempfile
 import os
-import subprocess
+import subprocess, commands
 import re, sys
 
 # A Shiroutine is a function with a state, which can be cleaned from any other function, resetting the Shiroutine to a default state.
@@ -258,11 +258,11 @@ class QueryShiroutine(Shiroutine):
 
 # Get number of unique users
 class UsercountShiroutine(Shiroutine):
-    command = "sort -u users_shiverbot.log | tee users_shiverbot.log | wc -l"
+    command = "sort -u -o users_shiverbot.log users_shiverbot.log && cat users_shiverbot.log | wc -l"
     def run(self, msgtext):
         super(UsercountShiroutine, self).run(msgtext)
-        # We had 823 unique users until now. But I accidentally overwrote the log file, so let's start from the beginning
+        # We had 823 unique users until 21.10.2018. But I accidentally overwrote the log file, so let's start from the beginning
         # update file and get number of lines
-        result = subprocess.check_output(UsercountShiroutine.command.split(), stderr=subprocess.STDOUT)
-        num = result.stdout.decode('utf-8') # if it is an error, tell the user about that error
+        result = commands.getoutput(UsercountShiroutine.command)
+        num = result.decode('utf-8') # if it is an error, tell the user about that error
         return "Number of unique users: \n{}".format(num)
