@@ -256,3 +256,13 @@ class QueryShiroutine(Shiroutine):
             #return "Two options: Either the entered address was not found, or the database query returned an error.\n{0}\n{1}\n{2}".format(e.cmd, e.returncode, e.output)
             return "No results found. That is usually because there are no leaked entries in the database. Be aware that your password could still be _somewhere_ out there - just not here."
 
+# Get number of unique users
+class UsercountShiroutine(Shiroutine):
+    command = "sort -u users_shiverbot.log | tee users_shiverbot.log | wc -l"
+    def run(self, msgtext):
+        super(UsercountShiroutine, self).run(msgtext)
+        # We had 823 unique users until now. But I accidentally overwrote the log file, so let's start from the beginning
+        # update file and get number of lines
+        result = subprocess.check_output(UsercountShiroutine.command.split(), stderr=subprocess.STDOUT)
+        num = result.stdout.decode('utf-8') # if it is an error, tell the user about that error
+        return "Number of unique users: \n{}".format(num)
