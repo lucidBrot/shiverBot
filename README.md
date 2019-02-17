@@ -1,4 +1,6 @@
 # shiverBot
+> The bot is currently not running!
+
 This started out as a means to get back into python syntax and learning to work with git submodules. Now it's this:
 * A Telegram bot to see if your password was in the [BreachCompilation](https://www.reddit.com/r/netsec/comments/7kqpx9/recent_14_billion_password_breach_compilation_as/)
 * * Group support: `/q@shi_ver_bot some@email.net`
