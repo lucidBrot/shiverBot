@@ -12,7 +12,7 @@ This started out as a means to get back into python syntax and learning to work 
 
 https://t.me/shi_ver_bot
 
-823 unique users since 09.03.2018 (number from 05.10.18), and before that about another 30 but not rigorously counted.
+1979 unique users since 09.03.2018 (number from 11.08.19).
 
 Requirements to build it yourself, in case you want to use my structure as a template for your own bot:
 ```
