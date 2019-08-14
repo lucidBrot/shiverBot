@@ -1,4 +1,5 @@
-# shi_ver_bot_g bot_g
+# -*- coding: utf-8 -*-
+
 import sys
 import time
 import random
@@ -26,7 +27,7 @@ USER_LOG_FILE = 'users_shiverbot.log'
 # These settings are ignored unless main() is not called
 # setup logger - outside of main() because it should also log when this file was loaded in an other way
 LOGFILE = './log.shiver'
-formatter_g = logging.Formatter('%(asctime)s %(levelname)s %(message)s') # Formatter for the logger
+formatter_g = logging.Formatter(u'%(asctime)s %(levelname)s %(message)s') # Formatter for the logger
 logger_g = None # defined in main / on module import
 # -------------------------------------------------------
 
@@ -68,7 +69,7 @@ class ShiverBot(telepot.helper.ChatHandler):
             global logger_g
             msgtext = msg['text']
             content_type, chat_type, chat_id = telepot.glance(msg)
-            logger_g.info('Got message <{}> from chat_id {}'.format(msgtext, chat_id))
+            logger_g.info(u'Got message <{}> from chat_id {}'.format(msgtext, chat_id))
             self.txtMsgSwitch(msgtext, chat_id) # find out what to do with the text message
             # After answering, log that this user started chatting
             # this should make it easier to later count the number of users (just sort the file and remove duplicates)
@@ -164,7 +165,7 @@ class ShiverBot(telepot.helper.ChatHandler):
 
 # setup a new logger
 def setup_logger(name, log_file, formatter, level=logging.INFO, printout=True):
-	handler = logging.FileHandler(log_file)        
+	handler = logging.FileHandler(log_file, encoding='UTF-8')        
 	handler.setFormatter(formatter)
 
 	logger = logging.getLogger(name)

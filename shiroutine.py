@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (C) Eric Mink 2018
 
 # import makeAboveMeme either from subdirectory or from global installation.
@@ -243,7 +244,7 @@ class QueryShiroutine(Shiroutine):
                     
             else:
                 if os.path.isfile(QueryShiroutine.querypath):
-                    returnMsg = '---{}---\n'.format(msgtext)+subprocess.check_output([QueryShiroutine.querypath, msgtext], stderr=subprocess.STDOUT)
+                    returnMsg = u'---{}---\n'.format(msgtext)+subprocess.check_output([QueryShiroutine.querypath, msgtext], stderr=subprocess.STDOUT)
                 else:
                     return "Sorry, I don't have the database to hand at the moment."
 
