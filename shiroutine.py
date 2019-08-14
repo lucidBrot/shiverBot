@@ -239,7 +239,7 @@ class QueryShiroutine(Shiroutine):
                     reslist = res.split('\n')
                     r = re.compile(splitted[1])
                     result = filter(r.search, reslist)
-                    outstr = '--- '+msgtext+' ---\n' + '\n'.join(result)
+                    outstr = u'--- '+msgtext+' ---\n' + '\n'.join(result)
                     returnMsg = outstr
                     
             else:
