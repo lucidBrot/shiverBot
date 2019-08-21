@@ -1,5 +1,9 @@
 # shiverBot
 
+https://t.me/shi_ver_bot
+
+2012 unique users since 09.03.2018 (number from 21.08.19).
+
 This started out as a means to get back into python syntax and learning to work with git submodules. Now it's this:
 * A Telegram bot to see if your password was in the [BreachCompilation](https://www.reddit.com/r/netsec/comments/7kqpx9/recent_14_billion_password_breach_compilation_as/)
 * * Group support: `/q@shi_ver_bot some@email.net`
@@ -9,10 +13,6 @@ This started out as a means to get back into python syntax and learning to work 
 * * Option for empty title or text by using `.`
 * * Option for only a dot as text or title by using `\.`
 * * * If you wanted `\.` as text, you're out of luck
-
-https://t.me/shi_ver_bot
-
-1979 unique users since 09.03.2018 (number from 11.08.19).
 
 Requirements to build it yourself, in case you want to use my structure as a template for your own bot:
 ```
