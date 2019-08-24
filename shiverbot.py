@@ -1,4 +1,7 @@
+#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
+
+# python2.7 is explicitly specified because of my messed up pip installation
 
 import sys
 import time
