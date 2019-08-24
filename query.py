@@ -40,7 +40,8 @@ def connect_if_required():
             user=DB_USER,
             password=DB_PASS,
             host=DB_HOST,
-            database=DB_NAME
+            database=DB_NAME,
+            converter_class=MyConverter,
             )
 
 def query_by_email(email, limit = 50):
@@ -56,6 +57,20 @@ def query_by_email(email, limit = 50):
         return result
     finally:
         CONNECTION.close()
+
+# converter class because mysql returns bytestrings instead of unicode/utf-8
+# to remove this class again, remove the converter in the connection
+class MyConverter(mysql.connector.conversion.MySQLConverter):
+
+    def row_to_python(self, row, fields):
+        row = super(MyConverter, self).row_to_python(row, fields)
+
+        def to_unicode(col):
+            if type(col) == bytearray:
+                return col.decode('utf-8')
+            return col
+
+        return[to_unicode(col) for col in row]
 
 if __name__ == "__main__":
     print(query_by_email(sys.argv[1]))
