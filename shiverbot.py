@@ -15,6 +15,7 @@ import logging
 import re # regex
 import os # current directory
 import shiroutine as SR
+import querywrapper as QW
 
 # global variable for the bot_g. Using secret token from config file. That is loaded in main.
 # IF YOU'RE IMPORTING THIS FILE, MAKE SURE TO SET bot_g
@@ -117,6 +118,7 @@ class ShiverBot(telepot.helper.ChatHandler):
                 '/rout':SR.TestShiroutine(self.setNextDefault, shiverbot=self, globalbot = bot_g).start,
                 '/q':SR.QueryShiroutine(self.setNextDefault, shiverbot=self, globalbot= bot_g).start,
                 '/u':SR.UsercountShiroutine(self.setNextDefault, shiverbot=self, globalbot = bot_g).start,
+                '/e':self.choice(QW.query), # experimental query to the ShiverDB
                 }
 
         # support message@botname, split command and content

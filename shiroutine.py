@@ -267,7 +267,6 @@ class UsercountShiroutine(Shiroutine):
     command = "sort -u -o users_shiverbot.log users_shiverbot.log && cat users_shiverbot.log | wc -l"
     def run(self, msgtext):
         super(UsercountShiroutine, self).run(msgtext)
-        # We had 823 unique users until 21.10.2018. But I accidentally overwrote the log file, so let's start from the beginning
         # update file and get number of lines
         result = commands.getoutput(UsercountShiroutine.command)
         num = result.decode('utf-8') # if it is an error, tell the user about that error
