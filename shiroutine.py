@@ -12,6 +12,7 @@ import tempfile
 import os
 import subprocess, commands
 import re, sys
+import yaml
 
 # A Shiroutine is a function with a state, which can be cleaned from any other function, resetting the Shiroutine to a default state.
 class Shiroutine(object):
@@ -218,7 +219,7 @@ class DefaultShiroutine(Shiroutine):
         return "I didn't expect pics today ;)"
 
 class QueryShiroutine(Shiroutine):
-    querypath = r'/mnt/PIHDD/BreachCompilation/query.sh'
+    querypath = r'/mnt/oceanPortal/BreachCompilation/query.sh'
     def run(self, msgtext):
         super(QueryShiroutine, self).run(msgtext)
         
