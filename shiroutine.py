@@ -212,6 +212,8 @@ class TestShiroutine(Shiroutine):
 class DefaultShiroutine(Shiroutine):
     def run(self, msgtext):
         super(DefaultShiroutine, self).run(msgtext)
+        if '@' in msgtext:
+            return "Unexpected input. Did you mean to prefix your message with a /q?"
         return "I didn't study for this 0.o"
 
     def runImg(self, msg):
