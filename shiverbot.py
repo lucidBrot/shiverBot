@@ -196,7 +196,7 @@ def main(): # starts everything
 	formatter_g = logging.Formatter(log_format) # '%(asctime)s %(levelname)s %(message)s' or similar
 	# set logger to file from config
 	LOGFILE = config['logger']['log_file']
-	logger_g = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=formatter_g, printout=False)
+	logger_g = setup_logger(name=__name__, log_file=LOGFILE, level=logging.DEBUG, formatter=formatter_g, printout=True)
 	print 'set logfile to {}'.format(LOGFILE)
 
 	# load token from config file and set global bot_g variable
