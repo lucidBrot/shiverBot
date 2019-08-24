@@ -6,7 +6,7 @@ import subprocess
 from pipes import quote
 
 def query(email, limit = 50):
-    email = email.replace("'", r"\'").replace('"', r'\"')
+    email = email.replace('\\', '\\\\').replace("'", r"\'").replace('"', r'\"')
     script = [
             "python3.6", 
             "-c", 
