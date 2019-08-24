@@ -235,7 +235,8 @@ class QueryShiroutine(Shiroutine):
                 splitted = msgtext.split('|')
                 # only query the first enty
                 if os.path.isfile( QueryShiroutine.querypath ):
-                    res = subprocess.check_output([QueryShiroutine.querypath, splitted[0]], stderr=subprocess.STDOUT)
+                    res_bytes = subprocess.check_output([QueryShiroutine.querypath, splitted[0]], stderr=subprocess.STDOUT)
+                    res = unicode(res_bytes, encoding='utf-8', errors='ignore')
                     reslist = res.split('\n')
                     r = re.compile(splitted[1])
                     result = filter(r.search, reslist)
@@ -244,7 +245,9 @@ class QueryShiroutine(Shiroutine):
                     
             else:
                 if os.path.isfile(QueryShiroutine.querypath):
-                    returnMsg = u'---{}---\n'.format(msgtext)+subprocess.check_output([QueryShiroutine.querypath, msgtext], stderr=subprocess.STDOUT)
+                    returnMsg = u'---{}---\n{}'.format(msgtext, 
+                            unicode(subprocess.check_output([QueryShiroutine.querypath, msgtext], stderr=subprocess.STDOUT), encoding='utf-8', errors = 'ignore')
+                    )
                 else:
                     return "Sorry, I don't have the database to hand at the moment."
 
