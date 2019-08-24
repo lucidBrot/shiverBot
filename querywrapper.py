@@ -8,7 +8,7 @@ def query(email, limit = 50):
     script = [
             "python3.6", 
             "-c", 
-            "import query; print( query.query_by_email('{email}', {limit}) )".format(email = email, limit = limit)
+            u"import query; print( query.query_by_email('{email}', {limit}) )".format(email = email, limit = limit)
         ]
     proc = subprocess.check_output(script, shell=False)
     return proc
