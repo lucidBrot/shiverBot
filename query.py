@@ -53,7 +53,7 @@ def query_by_email(email, limit = 50):
         """.format(table = DB_TABLE, email = email, limit = limit)
         )
         result = cursor.fetchall()
-        print(result)
+        return result
     finally:
         CONNECTION.close()
 
