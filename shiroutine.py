@@ -237,7 +237,7 @@ class QueryShiroutine(Shiroutine):
                 # only query the first enty
                 if os.path.isfile( QueryShiroutine.querypath ):
                     res_bytes = subprocess.check_output([QueryShiroutine.querypath, splitted[0]], stderr=subprocess.STDOUT)
-                    res = unicode(res_bytes, encoding='utf-8', errors='ignore')
+                    res = unicode(res_bytes, encoding='utf-8')
                     reslist = res.split('\n')
                     r = re.compile(splitted[1])
                     result = filter(r.search, reslist)
@@ -247,14 +247,15 @@ class QueryShiroutine(Shiroutine):
             else:
                 if os.path.isfile(QueryShiroutine.querypath):
                     returnMsg = u'---{}---\n{}'.format(msgtext, 
-                            unicode(subprocess.check_output([QueryShiroutine.querypath, msgtext], stderr=subprocess.STDOUT), encoding='utf-8', errors = 'ignore')
+                            unicode(subprocess.check_output([QueryShiroutine.querypath, msgtext], stderr=subprocess.STDOUT), encoding='utf-8')
                     )
                 else:
                     return "Sorry, I don't have the database to hand at the moment."
 
             # filter out messages that are too long
-            if(returnMsg.count('\n')>50):
-                return "Output has over 50 lines. I cannot send you that."
+            count = returnMsg.count('\n')
+            if(count >50):
+                return "Output has over 50 lines ({}). I cannot send you that.".format(count)
             else:
                 return returnMsg
         except subprocess.CalledProcessError as e:
