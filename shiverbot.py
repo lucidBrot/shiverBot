@@ -87,7 +87,7 @@ class ShiverBot(telepot.helper.ChatHandler):
         logger_g.debug('that photo is {}.'.format(msg))
         # hackish, but less effort than to replace default_choice with a shiroutine instead of a function
         result = self.default_choice.im_self.runImg(msg)
-        logger_g.info("To {1}  sending <{0}>".format(result, chat_id))
+        logger_g.info(u"To {1}  sending <{0}>".format(result, chat_id))
 
         if result == None or result == "":
             pass
@@ -140,7 +140,7 @@ class ShiverBot(telepot.helper.ChatHandler):
         # default_choice is stored in self. Might be set by functions that want to form a conversation thread
         # If the new message is not a command, do not wipe the current state.
         result = messageChoices.get(msgCommand.lower(), self.choice(self.default_choice, reset_state=False))(msgContent)
-        logger_g.info("To {1}  sending <{0}>".format(result, chat_id))
+        logger_g.info(u"To {1}  sending <{0}>".format(result, chat_id))
 
         if result == None or result == "":
             pass
