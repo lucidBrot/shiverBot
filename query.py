@@ -50,7 +50,7 @@ def query_by_email(email, limit = 50):
     try:
         cursor = CONNECTION.cursor()
         cursor.execute("""
-            select * from {table} where email = %s limit %s;
+            select email, pass from {table} where email = %s limit %s;
         """.format(table=DB_TABLE),
             (email, limit) # %s and tuple makes execute sanitize inputs
         )
