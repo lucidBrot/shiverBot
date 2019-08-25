@@ -107,13 +107,14 @@ class ShiverBot(telepot.helper.ChatHandler):
         # initializes a routine anew whenever this dictionary is used (i.e. when a message arrives) because otherwise multiple users would share the same state.
         messageChoices = { # dictionary functions are expected to take the message text as argument and return an answer that will be sent to the user
                 '/test': self.choice('test'), # choice cleans the default routine and then calls the reply or a str
-                '/help': self.choice('This is a very helpful message indeed.\n'
-                   '/mam - Interactively create a captioned image. Send a dot if you want to leave a field empty, send a `\.` if you really want only a dot as text.\n'
+                '/help': self.choice('This is a very helpful message indeed.\n\n'
+                    '/e some@email.com - search on an unstable database that is always growing. Experimental feature! This database is currently being fed with the collections #1-#5 and Antipublic (2018)\n\n'
+                    '/q some@email.com - search the BreachCompilation (compiled in 2017). You can use `/q some@email.com|searchterm` to perform a regexp search on the results\n\n'
+                   '/mam - Deprecated. Interactively create a captioned image. Send a dot if you want to leave a field empty, send a `\.` if you really want only a dot as text.\n\n'
                     'use <br>, \\n or a normal newline for a new line. Any other html will be left as you enter it.\n'
-                    '/help - Display some helpful message.\n'
-                    '/q some@email.com - search the BreachCompilation (compiled in 2017). You can use `/q some@email.com|searchterm` to perform a regexp search on the results'
+                    '/help - Display some helpful message.\n\n'
                     ),
-                '/start': self.choice('Hey. I don\'t do much stuff yet. But feel free to snoop around. /help might help you.'), # TODO: better start message
+                '/start': self.choice('Hey. Check out\n/q some@email.com\n/e some@email.com\n\n/help might help you. :)'), 
                 '/mam':SR.MamShiroutine(self.setNextDefault, shiverbot=self, globalbot = bot_g).start, # not using choice by design: mam decides by itself when to clean the default value.
                 '/rout':SR.TestShiroutine(self.setNextDefault, shiverbot=self, globalbot = bot_g).start,
                 '/q':SR.QueryShiroutine(self.setNextDefault, shiverbot=self, globalbot= bot_g).start,
