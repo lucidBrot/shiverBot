@@ -266,7 +266,7 @@ class QueryShiroutine(Shiroutine):
 
 # Get number of unique users
 class UsercountShiroutine(Shiroutine):
-    command = "sort -u -o users_shiverbot.log users_shiverbot.log && cat users_shiverbot.log | wc -l"
+    command = "sort -u -o users_shiverbot.log users_shiverbot.log && wc -l users_shiverbot.log"
     def run(self, msgtext):
         super(UsercountShiroutine, self).run(msgtext)
         # update file and get number of lines
