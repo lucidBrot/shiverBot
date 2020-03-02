@@ -2,7 +2,7 @@
 
 https://t.me/shi_ver_bot
 
-2610 unique users since 09.03.2018 (number from 10.11.19).
+3000 unique users since 09.03.2018, 186 Mio entries. (numbers from 10.12.19).
 
 This started out as a means to get back into python syntax and learning to work with git submodules. Now it's this:
 * A Telegram bot to see if your password was in the [BreachCompilation](https://www.reddit.com/r/netsec/comments/7kqpx9/recent_14_billion_password_breach_compilation_as/)
