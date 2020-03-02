@@ -17,4 +17,4 @@ def query(email, limit = 50):
         proc = subprocess.check_output(script, shell=False) 
         return proc
     except CalledProcessError as e:
-        return "Could not access the database at this time."
+        return "Could not access the database at this time. (Likely because I'm creating a backup right now)"

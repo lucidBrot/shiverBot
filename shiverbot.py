@@ -16,6 +16,7 @@ import re # regex
 import os # current directory
 import shiroutine as SR
 import querywrapper as QW
+import urllib3
 
 # global variable for the bot_g. Using secret token from config file. That is loaded in main.
 # IF YOU'RE IMPORTING THIS FILE, MAKE SURE TO SET bot_g
@@ -49,7 +50,12 @@ class ShiverBot(telepot.helper.ChatHandler):
         self.name = None
 
     def on_chat_message(self, msg):
-        self.handle(msg)
+        try:
+            self.handle(msg)
+        except urllib3.exceptions.ProtocolError as e:
+            logger_g.info(u'Caught {} \nProtocol Error, waiting a bit...'.format(e))
+            time.sleep(1)
+            self.handle(msg)
 
     def handle(self, msg): # msg is an array that could be used e.g as msg['chat']['id']  to get the chat id
             global bot_g, logger_g
