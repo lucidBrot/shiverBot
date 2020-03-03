@@ -222,6 +222,7 @@ class DefaultShiroutine(Shiroutine):
 
 class QueryShiroutine(Shiroutine):
     querypath = r'/mnt/oceanPortal/BreachCompilation/query.sh'
+    timeoutcmd = 'timeout 20 ' # timeout after X seconds
     def run(self, msgtext):
         super(QueryShiroutine, self).run(msgtext)
         
@@ -238,7 +239,7 @@ class QueryShiroutine(Shiroutine):
                 splitted = msgtext.split('|')
                 # only query the first enty
                 if os.path.isfile( QueryShiroutine.querypath ):
-                    res_bytes = subprocess.check_output([QueryShiroutine.querypath, splitted[0]], stderr=subprocess.STDOUT)
+                    res_bytes = subprocess.check_output([timeoutcmd, QueryShiroutine.querypath, splitted[0]], stderr=subprocess.STDOUT)
                     res = unicode(res_bytes, encoding='latin-1')
                     reslist = res.split('\n')
                     r = re.compile(splitted[1])
@@ -249,7 +250,7 @@ class QueryShiroutine(Shiroutine):
             else:
                 if os.path.isfile(QueryShiroutine.querypath):
                     returnMsg = u'---{}---\n{}'.format(msgtext, 
-                            unicode(subprocess.check_output([QueryShiroutine.querypath, msgtext], stderr=subprocess.STDOUT), encoding='latin-1')
+                            unicode(subprocess.check_output([timeoutcmd, QueryShiroutine.querypath, msgtext], stderr=subprocess.STDOUT), encoding='latin-1')
                     )
                 else:
                     return "Sorry, I don't have the database to hand at the moment."
