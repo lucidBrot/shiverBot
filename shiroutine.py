@@ -222,7 +222,8 @@ class DefaultShiroutine(Shiroutine):
 
 class QueryShiroutine(Shiroutine):
     querypath = r'/mnt/oceanPortal/BreachCompilation/query.sh'
-    timeoutlen = '5' # timeout after X seconds
+    timeoutlen1 = '20' # timeout after X seconds
+    timeoutlen2 = '60' # timeout after X seconds
     def run(self, msgtext):
         super(QueryShiroutine, self).run(msgtext)
         
@@ -232,8 +233,8 @@ class QueryShiroutine(Shiroutine):
                 self.setNextDefaultRoutine(self.run)
                 return response
             else:
-                if msgtext != "eric@mink.li":
-                    response = "Sorry, I'm maintaining this command right now."
+                if msgtext == "lucidbrot":
+                    response = "Sorry, no."
                     self.setNextDefaultRoutine(None)
                     return response
                 self.setNextDefaultRoutine(None)
@@ -243,7 +244,7 @@ class QueryShiroutine(Shiroutine):
                 splitted = msgtext.split('|')
                 # only query the first enty
                 if os.path.isfile( QueryShiroutine.querypath ):
-                    res_bytes = subprocess.check_output(['timeout', QueryShiroutine.timeoutlen, QueryShiroutine.querypath, splitted[0]], stderr=subprocess.STDOUT)
+                    res_bytes = subprocess.check_output(['timeout', QueryShiroutine.timeoutlen1, QueryShiroutine.querypath, splitted[0]], stderr=subprocess.STDOUT)
                     res = unicode(res_bytes, encoding='latin-1')
                     reslist = res.split('\n')
                     r = re.compile(splitted[1])
@@ -254,7 +255,7 @@ class QueryShiroutine(Shiroutine):
             else:
                 if os.path.isfile(QueryShiroutine.querypath):
                     returnMsg = u'---{}---\n{}'.format(msgtext, 
-                            unicode(subprocess.check_output(['timeout', QueryShiroutine.timeoutlen, QueryShiroutine.querypath, msgtext], stderr=subprocess.STDOUT), encoding='latin-1')
+                            unicode(subprocess.check_output(['timeout', QueryShiroutine.timeoutlen2, QueryShiroutine.querypath, msgtext], stderr=subprocess.STDOUT), encoding='latin-1')
                     )
                 else:
                     return "Sorry, I don't have the database to hand at the moment."
@@ -267,7 +268,12 @@ class QueryShiroutine(Shiroutine):
                 return returnMsg
         except subprocess.CalledProcessError as e:
             #return "Two options: Either the entered address was not found, or the database query returned an error.\n{0}\n{1}\n{2}".format(e.cmd, e.returncode, e.output)
-            return "No results found. That is usually because there are no leaked entries in the database. Be aware that your password could still be _somewhere_ out there - just not here."
+            if e.returncode == 124:
+                # The timeout was triggered
+                additionalMessage = '' if not '|' in msgtext else ' That is probably because of your regular expression or because your input is very short.'
+                timeoutlen = QueryShiroutine.timeoutlen1 if '|' in msgtext else QueryShiroutine.timeoutlen2
+                return "Timeout of {} seconds was triggered.{}".format(timeoutlen, additionalMessage)
+            return "No results found. That is usually because there are no leaked entries in the database. Be aware that your password could still be somewhere out there - just not here. Perhaps you have better luck with the /e command. It uses a larger database."
 
 # Get number of unique users
 class UsercountShiroutine(Shiroutine):
