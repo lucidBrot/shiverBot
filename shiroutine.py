@@ -222,7 +222,7 @@ class DefaultShiroutine(Shiroutine):
 
 class QueryShiroutine(Shiroutine):
     querypath = r'/mnt/oceanPortal/BreachCompilation/query.sh'
-    timeoutcmd = 'timeout 20 ' # timeout after X seconds
+    timeoutlen = '5' # timeout after X seconds
     def run(self, msgtext):
         super(QueryShiroutine, self).run(msgtext)
         
@@ -232,6 +232,10 @@ class QueryShiroutine(Shiroutine):
                 self.setNextDefaultRoutine(self.run)
                 return response
             else:
+                if msgtext != "eric@mink.li":
+                    response = "Sorry, I'm maintaining this command right now."
+                    self.setNextDefaultRoutine(None)
+                    return response
                 self.setNextDefaultRoutine(None)
             returnMsg = ""
             # egrep the results... maybe multiple times
@@ -239,7 +243,7 @@ class QueryShiroutine(Shiroutine):
                 splitted = msgtext.split('|')
                 # only query the first enty
                 if os.path.isfile( QueryShiroutine.querypath ):
-                    res_bytes = subprocess.check_output([timeoutcmd, QueryShiroutine.querypath, splitted[0]], stderr=subprocess.STDOUT)
+                    res_bytes = subprocess.check_output(['timeout', QueryShiroutine.timeoutlen, QueryShiroutine.querypath, splitted[0]], stderr=subprocess.STDOUT)
                     res = unicode(res_bytes, encoding='latin-1')
                     reslist = res.split('\n')
                     r = re.compile(splitted[1])
@@ -250,7 +254,7 @@ class QueryShiroutine(Shiroutine):
             else:
                 if os.path.isfile(QueryShiroutine.querypath):
                     returnMsg = u'---{}---\n{}'.format(msgtext, 
-                            unicode(subprocess.check_output([timeoutcmd, QueryShiroutine.querypath, msgtext], stderr=subprocess.STDOUT), encoding='latin-1')
+                            unicode(subprocess.check_output(['timeout', QueryShiroutine.timeoutlen, QueryShiroutine.querypath, msgtext], stderr=subprocess.STDOUT), encoding='latin-1')
                     )
                 else:
                     return "Sorry, I don't have the database to hand at the moment."
