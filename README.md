@@ -1,3 +1,10 @@
+# Archive Note
+This repository is archived because  
+* I added no new passwords anymore. New passwords adding takes so long on my weak server that it is not worth it.
+* The bot is based on python 2, using an old and I believe deprecated library for communication with telegram
+* Honestly, nothing of value is in this repository
+* I will likely shut the bot down unannounced at some point when I feel like it.
+
 # shiverBot
 
 https://t.me/shi_ver_bot
